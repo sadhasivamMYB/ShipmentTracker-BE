@@ -22,9 +22,9 @@ export const documentUploads = pgTable(
             length: 50,
         }).notNull(),
 
-        version: integer("version")
-            .default(1)
-            .notNull(),
+        // version: integer("version")
+        //     .default(1)
+        //     .notNull(),
 
         fileName: varchar("file_name", {
             length: 255,
