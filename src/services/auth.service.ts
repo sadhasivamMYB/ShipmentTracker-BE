@@ -1,14 +1,10 @@
 
 import { eq, and } from "drizzle-orm";
 
-// import {
-//     hashPassword,
-//     comparePassword,
-// } from "../../utils/hash";
-
 import { generateToken } from "../utils/jwtHelper";
 import { users } from "../database/schema/users/users.schema";
 import { db } from "../config/database";
+import bcrypt from "bcrypt";
 
 export class AuthService {
 
@@ -30,8 +26,7 @@ export class AuthService {
     static async login(email: string, password: string) {
 
         const conditions = [
-            eq(users.email, email),
-            eq(users.password, password),
+            eq(users.email, email)
         ];
 
         const [user] = await db.select().from(users).where(and(...conditions));
@@ -39,13 +34,10 @@ export class AuthService {
         if (!user)
             throw new Error("Invalid Credentials");
 
-        // const isValid = await comparePassword(
-        //     password,
-        //     user.password
-        // );
+        const isValid = bcrypt.compare(password, user.password);
 
-        // if (!isValid)
-        //     throw new Error("Invalid Credentials");
+        if (!isValid)
+            throw new Error("Invalid Credentials");
 
         const token = generateToken({
 

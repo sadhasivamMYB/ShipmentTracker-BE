@@ -1,2 +1,9 @@
 export { users } from "./users/users.schema";
-
+export { workspaces } from "./workspace/workspace.schema";
+export { documentTypes } from "./documentType/document_type.schema";
+export { documentUploads } from "./documentUpload/document_upload.schema";
+export { registrations } from "./registration/registration.schema";
+export { registrationFields } from "./registrationField/registration_field.schema";
+export { fieldDefinitions } from "./fieldDefinition/field_definition.schema";
+export { summary } from "./summary/summary.schema";
+export { documentFields } from "./documentField/document_field.schema";
