@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.routes"
 import workspaceRoutes from "./routes/workspace.routes"
 import uploadRoutes from "./routes/upload.routes"
 import summaryRoutes from "./routes/summary.routes"
+import templateRoutes from "./routes/template.route"
 import { testConnection } from "./config/database"
 
 const app = express()
@@ -23,6 +24,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/workspace", workspaceRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/summary", summaryRoutes);
+app.use("/api/template", templateRoutes)
 
 app.get("/health", (req, res) => {
 
