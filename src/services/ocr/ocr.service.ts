@@ -9,6 +9,7 @@ import path from "path";
 import Tesseract from "tesseract.js";
 import { PDFParse } from 'pdf-parse';
 import { documentParsers } from "./parsers";
+import convertPdfToImg from "../pdf_to_img";
 
 export class OcrService {
     static async processDocument(uploadId: number, workspaceId: number, documentTypeId: number, filePath: string) {
@@ -27,18 +28,35 @@ export class OcrService {
                 await db.update(documentUploads).set({ status: 'failed' }).where(eq(documentUploads.id, uploadId));
                 return;
             }
-
+            console.log(typeName, "👍👍👍")
             // 2. Extract Text
             let extractedText = "";
             const ext = path.extname(filePath).toLowerCase();
             if (ext === '.pdf') {
+
+                console.log(typeName, "✨✨")
+
                 const dataBuffer = fs.readFileSync(filePath);
-                const pdfParser = new PDFParse({ data: dataBuffer });
-                const data = await pdfParser.getText();
-                extractedText = data.text;
+
+                if (typeName === "bl" || typeName == "form_m") {
+
+                    await convertPdfToImg(filePath)
+
+                    // const data = await pdfParser.getText();
+                    // extractedText = data.text;
+
+                } else {
+
+                    const pdfParser = new PDFParse({ data: dataBuffer });
+                    const data = await pdfParser.getText();
+                    extractedText = data.text;
+
+                }
             } else if (['.png', '.jpg', '.jpeg'].includes(ext)) {
                 const { data: { text } } = await Tesseract.recognize(filePath, 'eng');
                 extractedText = text;
+
+                console.log(extractedText, "❌❌❌❌❌❌ IMG Tensseract")
             } else {
                 console.warn(`[OCR] Unsupported file extension ${ext}.`);
             }
@@ -48,7 +66,7 @@ export class OcrService {
             // 3. Parse with specific parser
             const parsedData = parser(extractedText);
 
-            console.log(parsedData, "👍👍👍 🏢🏢☠️☠️")
+            // console.log(parsedData, "👍👍👍 🏢🏢☠️☠️")
 
             // 4. Save extracted fields to document_fields
             const fieldsToInsert = Object.entries(parsedData)
@@ -100,7 +118,7 @@ export class OcrService {
                 }
             } else if (['insurance', 'bl', 'export_pfi'].includes(typeName)) {
                 const pfi = parsedData?.pfiNumber;
-                console.log(pfi, "✨✨✨✨✨👤👤")
+                // console.log(pfi, "✨✨✨✨✨👤👤")
                 if (pfi) {
                     const existingSummary = await db.select().from(summary).where(
                         and(eq(summary.workspaceId, workspaceId), eq(summary.orderPfiNumber, pfi))
@@ -121,7 +139,7 @@ export class OcrService {
                             updateData.exportPfiNumber = parsedData.exportPfiNumber;
                         }
 
-                        await db.update(summary).set(updateData).where(eq(summary?.id, existingSummary[0]?.id));
+                        await db.update(summary).set(updateData).where(eq(summary?.id, Number(existingSummary[0]?.id)));
                     } else {
                         finalStatus = 'unmatched';
                     }

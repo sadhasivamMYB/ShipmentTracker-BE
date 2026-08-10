@@ -5,6 +5,8 @@ import authRoutes from "./routes/auth.routes"
 import workspaceRoutes from "./routes/workspace.routes"
 import uploadRoutes from "./routes/upload.routes"
 import summaryRoutes from "./routes/summary.routes"
+import templateRoutes from "./routes/template.route"
+import documentTypeRoutes from "./routes/documentType.routes"
 import { testConnection } from "./config/database"
 
 const app = express()
@@ -18,11 +20,13 @@ testConnection().then(() => {
 }).catch((err) => {
     console.log("Failed to connect to database", err)
 })
-
 app.use("/api/auth", authRoutes);
+app.use("/uploads", express.static("uploads"));
 app.use("/api/workspace", workspaceRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/summary", summaryRoutes);
+app.use("/api/template", templateRoutes);
+app.use("/api/document-types", documentTypeRoutes);
 
 app.get("/health", (req, res) => {
 

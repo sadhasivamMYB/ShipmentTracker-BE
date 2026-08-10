@@ -7,3 +7,5 @@ export { registrationFields } from "./registrationField/registration_field.schem
 export { fieldDefinitions } from "./fieldDefinition/field_definition.schema";
 export { summary } from "./summary/summary.schema";
 export { documentFields } from "./documentField/document_field.schema";
+export { template } from "./template/template.schema";
+export { templateField } from "./template/templateField.schema";

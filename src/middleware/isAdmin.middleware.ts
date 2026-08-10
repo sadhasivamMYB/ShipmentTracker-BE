@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import { verifyToken } from "../utils/jwtHelper.js";
+import { verifyToken } from "../utils/jwtHelper";
 
 export interface AuthRequest extends Request {
     user?: any;
 }
 
 
-export const isAuth = (req: AuthRequest, res: Response, next: NextFunction): void => {
+export const isAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
     try {
         const token = req.headers.authorization?.split(" ")[1];
         if (!token) {
@@ -16,6 +16,10 @@ export const isAuth = (req: AuthRequest, res: Response, next: NextFunction): voi
 
         const decoded = verifyToken(token);
         req.user = decoded;
+        if (decoded.role !== "admin") {
+            res.status(403).json({ message: "Unauthorized: Admin access required" });
+            return;
+        }
         next();
     } catch (error) {
         res.status(401).json({ message: "Token is not valid" });
