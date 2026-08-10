@@ -10,14 +10,25 @@ export class WorkspaceService {
 
     static async getWorkspaceById(id: number) {
         const result = await db.select().from(workspaces).where(eq(workspaces.id, id)).limit(1);
-        return result[0];
+        if (!result[0]) return null;
+
+        const uploads = await db.select().from(documentUploads)
+            .where(eq(documentUploads.workspaceId, result[0].id));
+
+        return { ...result[0], documentUploads: uploads };
     }
 
     static async getWorkspaceByYearMonth(year: number, month: string) {
         const result = await db.select().from(workspaces)
             .where(and(eq(workspaces.year, year), eq(workspaces.month, month)))
             .limit(1);
-        return result[0];
+            
+        if (!result[0]) return null;
+
+        const uploads = await db.select().from(documentUploads)
+            .where(eq(documentUploads.workspaceId, result[0].id));
+
+        return { ...result[0], documentUploads: uploads };
     }
 
     static async createWorkspace(year: number, month: string) {

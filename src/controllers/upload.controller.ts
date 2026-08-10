@@ -9,9 +9,9 @@ export class UploadController {
                 return res.status(400).json({ success: false, message: "No file uploaded" });
             }
 
-            const { workspaceId, documentTypeId } = req.body;
-            if (!workspaceId || !documentTypeId) {
-                return res.status(400).json({ success: false, message: "workspaceId and documentTypeId are required" });
+            const { workspaceId, documentTypeCode } = req.body;
+            if (!workspaceId || !documentTypeCode) {
+                return res.status(400).json({ success: false, message: "workspaceId and documentTypeCode are required" });
             }
 
             // Assuming user is authenticated and attached to req.user (handled by auth middleware)
@@ -19,7 +19,7 @@ export class UploadController {
 
             const uploadRecord = await UploadService.handleUpload(
                 parseInt(workspaceId),
-                parseInt(documentTypeId),
+                documentTypeCode,
                 userId,
                 file
             );
