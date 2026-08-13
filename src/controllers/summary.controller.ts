@@ -5,12 +5,12 @@ import { ExcelService } from "../services/excel/excel.service";
 export class SummaryController {
     static async getSummary(req: Request, res: Response) {
         try {
-            const { workspaceId } = req.query;
-            if (!workspaceId) {
-                return res.status(400).json({ success: false, message: "workspaceId is required" });
-            }
+            const { workspaceId, search } = req.query;
+            // if (!workspaceId) {
+            //     return res.status(400).json({ success: false, message: "workspaceId is required" });
+            // }
 
-            const summary = await SummaryService.getWorkspaceSummary(parseInt(workspaceId as string));
+            const summary = await SummaryService.getWorkspaceSummary(parseInt(workspaceId as string), search as string);
             res.status(200).json({ success: true, data: summary });
         } catch (error) {
             console.error("Error in getSummary:", error);
@@ -25,14 +25,29 @@ export class SummaryController {
                 return res.status(400).json({ success: false, message: "workspaceId is required" });
             }
 
-            const summary = await SummaryService.getWorkspaceSummary(parseInt(workspaceId as string));
-            const buffer = await ExcelService.generateExcelBuffer(summary);
+            const summary = await SummaryService.exportToExcel(parseInt(workspaceId as string));
+            const buffer = await ExcelService.generateExcelBuffer(summary!);
 
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', `attachment; filename="Summary_${workspaceId}.xlsx"`);
             res.send(buffer);
         } catch (error) {
             console.error("Error in exportSummaryExcel:", error);
+            res.status(500).json({ success: false, message: "Internal server error" });
+        }
+    }
+
+    static async getSelectedRowData(req: Request, res: Response) {
+        try {
+            const { pfi } = req.params;
+            if (!pfi) {
+                return res.status(400).json({ success: false, message: "pfi are required" });
+            }
+
+            const rowData = await SummaryService.getSelectedRowData(pfi as string);
+            res.status(200).json({ success: true, data: rowData });
+        } catch (error) {
+            console.error("Error in getSelectedRowData:", error);
             res.status(500).json({ success: false, message: "Internal server error" });
         }
     }
