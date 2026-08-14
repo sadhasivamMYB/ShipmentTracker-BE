@@ -20,7 +20,7 @@ export function extractAfterLabel(text: string, label: string) {
     const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
     for (let i = 0; i < lines.length; i++) {
-        if (lines[i].toLowerCase().includes(label.toLowerCase())) {
+        if (lines[i]?.toLowerCase().includes(label.toLowerCase())) {
             const nextLine = lines[i + 1] || "";
             return nextLine.replace(/\s*\/\s*$/, "").trim();
         }

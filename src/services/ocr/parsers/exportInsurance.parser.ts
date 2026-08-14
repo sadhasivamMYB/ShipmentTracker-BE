@@ -1,4 +1,4 @@
-import { normalizeText, firstMatch } from './utils';
+import { normalizeText, firstMatch, extractAfterLabel } from './utils';
 
 export type InsuranceFields = {
     dateOfIssue: string | null;
@@ -11,12 +11,16 @@ export type InsuranceFields = {
     exchangeRate: string | null;
 };
 
-export function parseInsurance(extractedText: string): Record<string, string | null> {
+export function parseExportInsurance(extractedText: string): Record<string, string | null> {
     const text = normalizeText(extractedText);
+
+    console.log(normalizeText, "Export Insurance")
 
     const dateOfIssue = firstMatch(text, /DATE OF ISSUE\s*:\s*([^\n]+)/i);
     const declaredCertNo = firstMatch(text, /DECLARED CERT NO\s*:\s*([^\n]+)/i)?.split(" ")[0] || "";
-    const naicomId = firstMatch(text, /NAICOM ID\s*:\s*([^\n]+)/i)?.trim() || "";
+    const Elev8Code = firstMatch(text, /PROFORMA INVOICE NO\/DATE:\s*([^\n]+)/i)?.split(" ")[0] || "";
+
+    console.log(Elev8Code)
 
     let proformaLine = firstMatch(text, /PROFORMA INVOICE NO[\/\s]*DATE\s*:\s*([^\n]+)/i)
         || firstMatch(text, /PROFORMA INVOICE NO\.?\s*:\s*([^\n]+)/i)
@@ -36,18 +40,16 @@ export function parseInsurance(extractedText: string): Record<string, string | n
         }
     }
 
-    const sumInsured = firstMatch(text, /SUM INSURED\s*:\s*(?:NGN\s*)?([\d,]+\.\d{2})/i);
-    const premium = firstMatch(text, /PREMIUM\s*:\s*(?:NGN\s*)?([\d,]+\.\d{2})/i)?.trim() || "";
-    const exchangeRate = firstMatch(text, /EXCHANGE RATE\s*:\s*-\s*([0-9.]+)/i);
+    const premium = firstMatch(text, /PREMIUM\s*:\s*(?:NGN\s*)?([\d,]+\.\d{2})/i);
 
     return {
-        pfiNumber: proformaInvoiceNo, // The link key
-        IIdateOfIssue: dateOfIssue,
-        IIdeclaredCertNo: declaredCertNo?.trim(),
-        naicomId: naicomId,
+        refElevCode: Elev8Code.trim(), // The link key
+        EIdateOfIssue: dateOfIssue,
+        EIdeclaredCertNo: declaredCertNo.trim(),
+        // naicomId: naicomId,
         // proformaInvoiceDate: proformaInvoiceDate,
-        // IIsumInsured: sumInsured,
-        IIpremiumAmount: premium,
-        // IIexchangeRate: exchangeRate,
+        // EIsumInsured: sumInsured,
+        EIpremiumAmount: premium,
+        // EIexchangeRate: exchangeRate,
     };
 }

@@ -3,4 +3,6 @@ node_modules
 uploads
 package-lock.json
 test*.ts
+test.ts
+*test*.ts
 templates

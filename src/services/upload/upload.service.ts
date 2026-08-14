@@ -15,18 +15,18 @@ export class UploadService {
         // Document Replacement Rule:
         // Remove previously extracted fields related to old uploads for this exact doc type in this workspace
         const [documentTypeId] = await db.select({ id: documentTypes.id }).from(documentTypes).where(eq(documentTypes.documentCode, documentTypeCode))
-        const previousUploads = await db.select().from(documentUploads).where(
-            eq(documentUploads.workspaceId, workspaceId)
-        );
-        const prevDocUpload = previousUploads.find(u => u.documentTypeId === documentTypeId?.id);
+        // const previousUploads = await db.select().from(documentUploads).where(
+        //     eq(documentUploads.workspaceId, workspaceId)
+        // );
+        // const prevDocUpload = previousUploads.find(u => u.documentTypeId === documentTypeId?.id);
 
-        if (prevDocUpload) {
-            // Delete old document fields
-            await db.delete(documentFields).where(eq(documentFields.documentId, prevDocUpload.id));
+        // if (prevDocUpload) {
+        //     // Delete old document fields
+        //     await db.delete(documentFields).where(eq(documentFields.documentId, prevDocUpload.id));
 
-            // Delete old document upload record
-            await db.delete(documentUploads).where(eq(documentUploads.id, prevDocUpload.id));
-        }
+        //     // Delete old document upload record
+        //     await db.delete(documentUploads).where(eq(documentUploads.id, prevDocUpload.id));
+        // }
 
         // Insert new document upload
         const [newUpload] = await db.insert(documentUploads).values({
