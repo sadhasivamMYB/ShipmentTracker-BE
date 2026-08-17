@@ -17,10 +17,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.get("/", isAdmin, TemplateController.getAllTemplates);
-router.post("/upload", isAdmin, upload.single("template"), TemplateController.uploadTemplateDocument);
-router.get("/:template_id", isAdmin, TemplateController.selectedTemplate);
-router.put("/:id", isAdmin, upload.single("template"), TemplateController.updateTemplate);
-router.post("/:template_id/render", isAdmin, TemplateController.renderTemplate);
+router.use(isAdmin);
+router.get("/", TemplateController.getAllTemplates);
+router.post("/upload", upload.single("template"), TemplateController.uploadTemplateDocument);
+router.get("/:template_id", TemplateController.selectedTemplate);
+router.put("/:id", upload.single("template"), TemplateController.updateTemplate);
+router.post("/:template_id/render", TemplateController.renderTemplate);
 
 export default router;

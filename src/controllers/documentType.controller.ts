@@ -18,7 +18,7 @@ export const getDocumentTypes = async (req: Request, res: Response) => {
 export const createDocumentType = async (req: Request, res: Response) => {
     try {
         const validatedData = CreateDocumentTypeSchema.parse(req.body);
-        
+
         const existingCode = await db.select().from(documentTypes).where(eq(documentTypes.documentCode, validatedData.documentCode));
         if (existingCode.length > 0) {
             res.status(400).json({ success: false, message: 'already the code exist' });
@@ -43,9 +43,9 @@ export const updateDocumentType = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const validatedData = UpdateDocumentTypeSchema.parse(req.body);
-        
+
         const existingCode = await db.select().from(documentTypes).where(eq(documentTypes.documentCode, validatedData.documentCode));
-        if (existingCode.length > 0 && existingCode[0].id !== Number(id)) {
+        if (existingCode.length > 0 && existingCode[0]?.id !== Number(id)) {
             res.status(400).json({ success: false, message: 'already the code exist' });
             return;
         }
@@ -54,12 +54,12 @@ export const updateDocumentType = async (req: Request, res: Response) => {
             .set(validatedData)
             .where(eq(documentTypes.id, Number(id)))
             .returning();
-            
+
         if (!updatedType) {
             res.status(404).json({ success: false, message: 'Document type not found' });
             return;
         }
-        
+
         res.json({ success: true, data: updatedType });
     } catch (error: any) {
         console.error('Update document type error:', error);
@@ -79,12 +79,12 @@ export const deleteDocumentType = async (req: Request, res: Response) => {
         const [deletedType] = await db.delete(documentTypes)
             .where(eq(documentTypes.id, Number(id)))
             .returning();
-            
+
         if (!deletedType) {
             res.status(404).json({ success: false, message: 'Document type not found' });
             return;
         }
-        
+
         res.json({ success: true, message: 'Document type deleted successfully' });
     } catch (error: any) {
         console.error('Delete document type error:', error);
