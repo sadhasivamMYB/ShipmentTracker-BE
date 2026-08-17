@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { db } from '../config/database';
 import { documentTypes } from '../database/schema/documentType/document_type.schema';
 import { eq } from 'drizzle-orm';
+import { CreateDocumentTypeSchema, UpdateDocumentTypeSchema } from '../zod/documentType.zod';
+import { z } from 'zod';
 
 export const getDocumentTypes = async (req: Request, res: Response) => {
     try {
@@ -15,18 +17,22 @@ export const getDocumentTypes = async (req: Request, res: Response) => {
 
 export const createDocumentType = async (req: Request, res: Response) => {
     try {
-        const { name, documentCode, description, status } = req.body;
-        const [newType] = await db.insert(documentTypes).values({
-            name,
-            documentCode,
-            description,
-            status: status || 'active'
-        }).returning();
+        const validatedData = CreateDocumentTypeSchema.parse(req.body);
+        
+        const existingCode = await db.select().from(documentTypes).where(eq(documentTypes.documentCode, validatedData.documentCode));
+        if (existingCode.length > 0) {
+            res.status(400).json({ success: false, message: 'already the code exist' });
+            return;
+        }
+
+        const [newType] = await db.insert(documentTypes).values(validatedData).returning();
         res.status(201).json({ success: true, data: newType });
     } catch (error: any) {
         console.error('Create document type error:', error);
-        if (error.code === '23505') {
-            res.status(400).json({ success: false, message: 'Name or Document Code already exists' });
+        if (error instanceof z.ZodError) {
+            res.status(400).json({ success: false, message: 'Validation error', errors: error.issues });
+        } else if (error.code === '23505') {
+            res.status(400).json({ success: false, message: 'already the code exist' });
         } else {
             res.status(500).json({ success: false, message: 'Internal server error' });
         }
@@ -36,10 +42,16 @@ export const createDocumentType = async (req: Request, res: Response) => {
 export const updateDocumentType = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { name, documentCode, description, status } = req.body;
+        const validatedData = UpdateDocumentTypeSchema.parse(req.body);
         
+        const existingCode = await db.select().from(documentTypes).where(eq(documentTypes.documentCode, validatedData.documentCode));
+        if (existingCode.length > 0 && existingCode[0].id !== Number(id)) {
+            res.status(400).json({ success: false, message: 'already the code exist' });
+            return;
+        }
+
         const [updatedType] = await db.update(documentTypes)
-            .set({ name, documentCode, description, status })
+            .set(validatedData)
             .where(eq(documentTypes.id, Number(id)))
             .returning();
             
@@ -51,8 +63,10 @@ export const updateDocumentType = async (req: Request, res: Response) => {
         res.json({ success: true, data: updatedType });
     } catch (error: any) {
         console.error('Update document type error:', error);
-        if (error.code === '23505') {
-            res.status(400).json({ success: false, message: 'Name or Document Code already exists' });
+        if (error instanceof z.ZodError) {
+            res.status(400).json({ success: false, message: 'Validation error', errors: error.issues });
+        } else if (error.code === '23505') {
+            res.status(400).json({ success: false, message: 'already the code exist' });
         } else {
             res.status(500).json({ success: false, message: 'Internal server error' });
         }

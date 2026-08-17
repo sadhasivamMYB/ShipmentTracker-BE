@@ -7,6 +7,7 @@ import uploadRoutes from "./routes/upload.routes"
 import summaryRoutes from "./routes/summary.routes"
 import templateRoutes from "./routes/template.route"
 import documentTypeRoutes from "./routes/documentType.routes"
+import usersRoutes from "./routes/users.routes"
 import { testConnection } from "./config/database"
 
 const app = express()
@@ -27,6 +28,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/summary", summaryRoutes);
 app.use("/api/template", templateRoutes);
 app.use("/api/document-types", documentTypeRoutes);
+app.use("/api/users", usersRoutes);
 
 app.get("/health", (req, res) => {
 

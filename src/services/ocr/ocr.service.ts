@@ -10,6 +10,7 @@ import Tesseract from "tesseract.js";
 import { PDFParse } from 'pdf-parse';
 import { documentParsers } from "./parsers";
 import { ProductLists } from "../../database/schema/productsLists/productList.schema";
+import { parseToDecimal } from "../../utils/numberHelper";
 
 export class OcrService {
     static async processDocument(uploadId: number, workspaceId: number, documentTypeId: number, filePath: string) {
@@ -85,7 +86,7 @@ export class OcrService {
                 .map(([fieldName, fieldValue]) => ({
                     documentId: uploadId,
                     fieldName,
-                    fieldValue: String(fieldValue),
+                    fieldValue: typeof fieldValue === 'object' ? JSON.stringify(fieldValue) : String(fieldValue),
                 }));
 
             if (fieldsToInsert.length > 0) {
@@ -116,9 +117,9 @@ export class OcrService {
                         updateData.fiInvoiceNumber = parsedData?.FI_invoiceNumber;
                         updateData.fiInvoiceDate = parsedData?.FI_invoiceDate;
                         updateData.fiDuePaymentDate = parsedData?.FI_duePaymentDate;
-                        updateData.fiInvoiceLineItemTotal = parsedData?.FI_invoiceLineItemTotal;
-                        updateData.fiFreight = parsedData?.FI_freight;
-                        updateData.fiInvoiceTotal = parsedData?.FI_invoiceTotal;
+                        updateData.fiInvoiceLineItemTotal = parseToDecimal(parsedData?.FI_invoiceLineItemTotal);
+                        updateData.fiFreight = parseToDecimal(parsedData?.FI_freight);
+                        updateData.fiInvoiceTotal = parseToDecimal(parsedData?.FI_invoiceTotal);
                     }
 
                     if (existingSummary.length > 0) {
@@ -130,8 +131,8 @@ export class OcrService {
                             console.log(parsedData?.FI_products)
                             await Promise.all(parsedData?.FI_products?.map(async (p: any) => {
                                 await db.update(ProductLists).set({
-                                    fi_qty: p?.qty,
-                                    fi_netPrice: p?.netPrice,
+                                    fi_qty: parseToDecimal(p?.qty),
+                                    fi_netPrice: parseToDecimal(p?.netPrice),
                                     //fob value
                                 }).where(
                                     and(eq(ProductLists.productPfiId, parsedData?.pfiNumber!),
@@ -154,8 +155,8 @@ export class OcrService {
                                         productPfiId: newSummary?.pficode,
                                         productCode: p.productCode,
                                         productName: p.productName,
-                                        pfi_qty: p.qty,
-                                        pfi_netPrice: p.netPrice,
+                                        pfi_qty: parseToDecimal(p.qty),
+                                        pfi_netPrice: parseToDecimal(p.netPrice),
                                     })
                                 }))
                             }
@@ -186,7 +187,7 @@ export class OcrService {
                         if (typeName === 'iins') {
                             updateData.insuranceNaicomId = parsedData.naicomId;
                             updateData.insuranceDateOfIssue = parsedData.IIdateOfIssue;
-                            updateData.insurancePremiumAmount = parsedData.IIpremiumAmount;
+                            updateData.insurancePremiumAmount = parseToDecimal(parsedData.IIpremiumAmount);
                             updateData.insuranceDeclaredCertNo = parsedData.IIdeclaredCertNo;
                         } else if (typeName === 'bl') {
                             updateData.blReference = parsedData.blReference;
@@ -215,9 +216,9 @@ export class OcrService {
 
                         let updateData: any = { updatedAt: new Date() };
                         if (typeName === 'eins') {
-                            updateData.exportInsuranceDateOfIssue = parsedData?.EIdateOfIssue
-                            updateData.exportInsuranceDeclaredCertNo = parsedData?.EIdeclaredCertNo
-                            updateData.exportInsurancePremiumAmount = parsedData?.EIpremiumAmount
+                            updateData.exportInsuranceDateOfIssue = parsedData?.EIdateOfIssue;
+                            updateData.exportInsuranceDeclaredCertNo = parsedData?.EIdeclaredCertNo;
+                            updateData.exportInsurancePremiumAmount = parseToDecimal(parsedData?.EIpremiumAmount);
                         }
                         else if (typeName === 'form_m') {
                             updateData.baNumber = parsedData.baNumber;
@@ -225,7 +226,7 @@ export class OcrService {
                         } else if (typeName === 'paar') {
                             updateData.paarNumber = parsedData.paarNumber;
                         } else if (typeName === 'export_assessment') {
-                            updateData.exportAssessmentAmount = parsedData.exportAssessmentAmount;
+                            updateData.exportAssessmentAmount = parseToDecimal(parsedData.exportAssessmentAmount);
                             updateData.exportAssessmentCno = parsedData.exportAssessmentCno;
                         }
 
