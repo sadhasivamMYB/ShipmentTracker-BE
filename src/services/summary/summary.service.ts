@@ -27,7 +27,7 @@ export class SummaryService {
 
         // Map them to the frontend's expected format
         const formattedSummary = workspaceSummaries.map(row => {
-            const { id, workspaceId, orderPfiNumber, createdAt, updatedAt, productName, qty, netPrice, ...rest } = row;
+            const { id, workspaceId, orderPfiNumber, createdAt, updatedAt, ...rest } = row;
 
             // Reconstruct row with `pfiNumber` instead of `orderPfiNumber`
             // Ensure any null values are passed as null so the frontend can handle the `-` fallback
@@ -71,16 +71,16 @@ export class SummaryService {
                     PFI_NUMBER: isFirstPfiRow ? row?.orderPfiNumber : "",
                     insuranceDateOfIssue: isFirstPfiRow ? row.insuranceDateOfIssue : "",
                     insuranceNaicomId: isFirstPfiRow ? row?.insuranceNaicomId : "",
-                    insurancePremiumAmount: isFirstPfiRow ? row?.insurancePremiumAmount : "",
+                    insurancePremiumAmount: isFirstPfiRow ? Number(row?.insurancePremiumAmount) : 0,
                     insuranceDeclaredCertNo: isFirstPfiRow ? row?.insuranceDeclaredCertNo : "",
 
                     //Fi
                     fiInvoiceNumber: isFirstPfiRow ? row?.fiInvoiceNumber : "",
                     fiInvoiceDate: isFirstPfiRow ? row?.fiInvoiceDate : "",
                     fiDuePaymentDate: isFirstPfiRow ? row?.fiDuePaymentDate : "",
-                    fiInvoiceLineItemTotal: isFirstPfiRow ? row?.fiInvoiceLineItemTotal : "",
-                    fiFreight: isFirstPfiRow ? row?.fiFreight : "",
-                    fiInvoiceTotal: isFirstPfiRow ? row?.fiInvoiceTotal : "",
+                    fiInvoiceLineItemTotal: isFirstPfiRow ? Number(row?.fiInvoiceLineItemTotal) : 0,
+                    fiFreight: isFirstPfiRow ? Number(row?.fiFreight) : 0,
+                    fiInvoiceTotal: isFirstPfiRow ? Number(row?.fiInvoiceTotal) : 0,
 
                     //BL
                     blReference: isFirstPfiRow ? row?.blReference : "",
@@ -92,7 +92,7 @@ export class SummaryService {
                     //Export Insurance
                     exportInsuranceDateOfIssue: isFirstPfiRow ? row?.exportInsuranceDateOfIssue : "",
                     exportInsuranceDeclaredCertNo: isFirstPfiRow ? row?.exportInsuranceDeclaredCertNo : "",
-                    exportInsurancePremiumAmount: isFirstPfiRow ? row?.exportInsurancePremiumAmount : "",
+                    exportInsurancePremiumAmount: isFirstPfiRow ? Number(row?.exportInsurancePremiumAmount) : 0,
 
                     //Form M
                     formNumber: isFirstPfiRow ? row?.formNumber : "",
@@ -125,5 +125,21 @@ export class SummaryService {
     static async getSelectedRowData(pfi: string) {
         const rowData = await db.select().from(ProductLists).where(eq(ProductLists.productPfiId, pfi));
         return rowData;
+    }
+
+    static async updateSummaryData(pfi: string, data: any) {
+        const [updatedSummary] = await db
+            .update(summary)
+            .set({
+                ...data,
+                updatedAt: new Date()
+            })
+            .where(eq(summary.orderPfiNumber, pfi))
+            .returning();
+
+        if (!updatedSummary) {
+            throw new Error(`Summary row with PFI ${pfi} not found`);
+        }
+        return updatedSummary;
     }
 }

@@ -4,6 +4,7 @@ import {
     varchar,
     integer,
     timestamp,
+    boolean,
 } from "drizzle-orm/pg-core";
 
 
@@ -19,6 +20,8 @@ export const users = pgTable("users", {
     password: varchar("password", { length: 255 }).notNull(),
 
     role: varchar("role", { length: 30 }).notNull(),
+
+    isActive: boolean("is_active").default(true).notNull(),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
 });

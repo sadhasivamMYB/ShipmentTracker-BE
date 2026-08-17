@@ -7,7 +7,7 @@ import { parsePaar } from './paar.parser';
 import { parseExportAssessment } from './export_assessment.parser';
 import { parseExportInsurance } from './exportInsurance.parser';
 
-export const documentParsers: Record<string, (text: string) => Record<string, string | null>> = {
+export const documentParsers: Record<string, (text: string) => Record<string, any>> = {
     'pfi': (text) => parsePFI(text, 'pfi'), // Import PFI
     'fi': (text) => parsePFI(text, 'fi'), // FI Document
     'iins': parseInsurance, // Import Insurance
