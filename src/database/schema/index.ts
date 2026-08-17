@@ -10,4 +10,6 @@ export { documentFields } from "./documentField/document_field.schema";
 export { template } from "./template/template.schema";
 export { templateField } from "./template/templateField.schema";
 export { ProductLists } from "./productsLists/productList.schema"
+export { otp_verification } from "./otp/otp.schema"
+export { userInvitations } from "./userInvite/user-invite"
 

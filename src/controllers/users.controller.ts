@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { UsersService } from "../services/users.service";
 import { CreateUserSchema, UpdateUserSchema } from "../zod/user.zod";
 import { z } from "zod";
+import { InvitationService } from "../services/invite/invitation.service";
 
 export class UsersController {
     static async getAll(req: Request, res: Response) {
@@ -16,8 +17,19 @@ export class UsersController {
     static async create(req: Request, res: Response) {
         try {
             const validatedData = CreateUserSchema.parse(req.body);
-            const user = await UsersService.createUser(validatedData);
-            res.status(201).json(user);
+            const result = await InvitationService.inviteUser({
+                fullName: validatedData.name,
+                email: validatedData.email,
+                role: validatedData.role
+            });
+            const user = result.data;
+            res.status(201).json({
+                id: user.id,
+                name: user.fullName,
+                email: user.email,
+                role: user.role,
+                isActive: user.isActive
+            });
         } catch (error: any) {
             if (error instanceof z.ZodError) {
                 return res.status(400).json({ message: "Validation error", errors: error.issues });

@@ -6,6 +6,7 @@ import {
     timestamp,
     boolean,
 } from "drizzle-orm/pg-core";
+import { UserStatus } from "../../enums";
 
 
 export const users = pgTable("users", {
@@ -17,11 +18,15 @@ export const users = pgTable("users", {
         .unique()
         .notNull(),
 
-    password: varchar("password", { length: 255 }).notNull(),
+    password: varchar("password", { length: 255 }),
 
     role: varchar("role", { length: 30 }).notNull(),
 
     isActive: boolean("is_active").default(true).notNull(),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
+
+
+
+    status: varchar("status", { length: 20 }).default(UserStatus.ACTIVE).notNull(),
 });
