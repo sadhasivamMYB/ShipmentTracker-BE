@@ -109,4 +109,15 @@ export class TemplateController {
             res.status(500).json({ success: false, message: "Internal server error during template update" });
         }
     }
+
+    static async deleteTemplate(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            await TemplateService.deleteTemplate(Number(id));
+            res.status(200).json({ message: "Template deleted successfully" });
+        } catch (error) {
+            console.error("Error deleting template:", error);
+            res.status(500).json({ error: "Failed to delete template" });
+        }
+    }
 }
