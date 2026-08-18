@@ -9,6 +9,7 @@ import templateRoutes from "./routes/template.route"
 import documentTypeRoutes from "./routes/documentType.routes"
 import usersRoutes from "./routes/users.routes"
 import { testConnection } from "./config/database"
+import { isAuth } from "./middleware/auth.middleware"
 
 const app = express()
 
@@ -42,6 +43,8 @@ testConnection().then(() => {
     console.log("Failed to connect to database", err)
 })
 app.use("/api/auth", authRoutes);
+
+app.use(isAuth)
 app.use("/uploads", express.static("uploads"));
 app.use("/api/workspace", workspaceRoutes);
 app.use("/api/upload", uploadRoutes);

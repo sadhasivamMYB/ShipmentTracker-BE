@@ -5,6 +5,9 @@ import { generateToken } from "../utils/jwtHelper";
 import { users } from "../database/schema/users/users.schema";
 import { db } from "../config/database";
 import bcrypt from "bcrypt";
+import { generate_OTP } from "../utils/otp-generator";
+import { otp_verification } from "../database/schema";
+import { sendOTPEmail } from "../utils/mailer";
 
 export class AuthService {
 
@@ -34,27 +37,41 @@ export class AuthService {
         if (!user)
             throw new Error("Invalid Credentials");
 
-        if (!user.isActive)
+        if (user.status !== "ACTIVE")
             throw new Error("Account is inactive Please Contact Admin");
 
-        const isValid = await bcrypt.compare(password, user.password);
+        const isValid = await bcrypt.compare(password, user?.password || "");
 
-        if (!isValid)
+
+        // if (user.status === UserStatus.INVITED || !user.password) {
+        //     throw new Error("Please activate your account using the invitation email.");
+        // }
+
+        // if (user.status === UserStatus.INACTIVE) {
+        //     throw new Error("Your account has been deactivated. Please contact your administrator.");
+        // }
+
+
+
+        if (!isValid) {
             throw new Error("Invalid Credentials");
+        }
 
-        const token = generateToken({
+        const otp = generate_OTP();
 
-            id: user.id,
-            role: user.role,
-
+        await db.insert(otp_verification).values({
+            userId: user.id,
+            otp,
+            expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+            attempts: 0
         });
+
+        sendOTPEmail(email, otp)
 
         return {
 
-            token,
-
-            user,
-
+            otpRequired: true,
+            email: email
         };
     }
 

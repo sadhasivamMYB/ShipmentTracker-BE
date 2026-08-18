@@ -191,4 +191,12 @@ export class TemplateService {
             throw error;
         }
     }
+
+    static async deleteTemplate(id: number) {
+        const deleted = await db
+            .delete(template)
+            .where(eq(template.id, id))
+            .returning();
+        return deleted;
+    }
 }

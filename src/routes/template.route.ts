@@ -23,5 +23,6 @@ router.post("/upload", upload.single("template"), TemplateController.uploadTempl
 router.get("/:template_id", TemplateController.selectedTemplate);
 router.put("/:id", upload.single("template"), TemplateController.updateTemplate);
 router.post("/:template_id/render", TemplateController.renderTemplate);
+router.delete("/:id", TemplateController.deleteTemplate);
 
 export default router;
