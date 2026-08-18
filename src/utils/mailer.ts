@@ -31,21 +31,21 @@ export const sendInvitationEmail = async (to: string, rawToken: string) => {
     const mailOptions = {
         from: fromAddress,
         to,
-        subject: "Welcome to Stock Management System - Activate Your Account",
+        subject: "Welcome to Shipment Tracker - Activate Your Account",
         html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
-                <h2 style="color: #333;">Welcome to Stock Management System</h2>
+                <h2 style="color: #333;">Welcome to Shipment Tracker</h2>
                 <p>Hello, ${user_nameFromToken?.fullName} </p>
-                <p>You have been added as a user in Stock Management System. Your account has been created successfully by the administrator.</p>
+                <p>You have been added as a user in Shipment Tracker. Your account has been created successfully by the administrator.</p>
                 <p>To activate your account and set up your password, please click the button below:</p>
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="${activationLink}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Activate Account</a>
+                    <a href="${activationLink}" style="background-color: #00861bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Activate Account</a>
                 </div>
                 <p>Or copy and paste this URL into your browser:</p>
                 <p style="word-break: break-all; color: #555;"><a href="${activationLink}">${activationLink}</a></p>
                 <p style="color: #888; font-size: 13px;">This invitation link will expire in 24 hours. If you did not expect this invitation, please ignore this email.</p>
                 <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-                <p style="color: #999; font-size: 12px; text-align: center;">Stock Management System Team</p>
+                <p style="color: #999; font-size: 12px; text-align: center;">Shipment Tracker Team</p>
             </div>
         `,
     };
@@ -69,15 +69,15 @@ export const sendOTPEmail = async (to: string, otp: any) => {
     const mailOptions = {
         from: fromAddress,
         to,
-        subject: "Stock Management System - Verify Your OTP",
+        subject: "Shipment Tracker - Verify Your OTP",
         html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
-                <h2 style="color: #333;">Welcome to Stock Management System</h2>
+                <h2 style="color: #333;">Welcome to Shipment Tracker</h2>
                 <p>Hello, ${user_name?.fullName} </p>
                 <p>Your OTP for login is: <strong> ${otp} </strong></p>
                 <p>This OTP will expire in 5 minutes. If you did not expect this OTP, please ignore this email.</p>
                 <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-                <p style="color: #999; font-size: 12px; text-align: center;">Stock Management System Team</p>
+                <p style="color: #999; font-size: 12px; text-align: center;">Shipment Tracker Team</p>
             </div>
         `,
     };

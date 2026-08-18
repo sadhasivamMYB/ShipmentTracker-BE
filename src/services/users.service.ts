@@ -11,11 +11,11 @@ export class UsersService {
             name: u.fullName,
             email: u.email,
             role: u.role,
-            isActive: u.isActive
+            status: u.status
         }));
     }
 
-    static async createUser(data: { name: string, email: string, role: string, isActive?: boolean }) {
+    static async createUser(data: { name: string, email: string, role: string, status?: string }) {
         // Generating a default hashed password for new users
         const defaultPassword = "Password@123";
         const hashedPassword = await bcrypt.hash(defaultPassword, 10);
@@ -26,7 +26,7 @@ export class UsersService {
                 fullName: data.name,
                 email: data.email,
                 role: data.role,
-                isActive: data.isActive ?? true,
+                status: data?.status ?? "invited",
                 password: hashedPassword,
             })
             .returning();
@@ -36,18 +36,19 @@ export class UsersService {
             name: user?.fullName,
             email: user?.email,
             role: user?.role,
-            isActive: user?.isActive
+            // isActive: user?.isActive,
+            status: user?.status
         };
     }
 
-    static async updateUser(id: number, data: { name: string, email: string, role: string, isActive: boolean }) {
+    static async updateUser(id: number, data: { name: string, email: string, role: string, status: string }) {
         const [user] = await db
             .update(users)
             .set({
                 fullName: data.name,
                 email: data.email,
                 role: data.role,
-                isActive: data.isActive,
+                status: data.status,
             })
             .where(eq(users.id, id))
             .returning();
@@ -61,7 +62,8 @@ export class UsersService {
             name: user.fullName,
             email: user.email,
             role: user.role,
-            isActive: user.isActive
+            // isActive: user.isActive
+            status: user.status
         };
     }
 

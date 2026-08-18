@@ -37,7 +37,7 @@ export class AuthService {
         if (!user)
             throw new Error("Invalid Credentials");
 
-        if (!user.isActive)
+        if (user.status !== "ACTIVE")
             throw new Error("Account is inactive Please Contact Admin");
 
         const isValid = await bcrypt.compare(password, user?.password || "");

@@ -28,7 +28,7 @@ export class UsersController {
                 name: user.fullName,
                 email: user.email,
                 role: user.role,
-                isActive: user.isActive
+                status: user.status
             });
         } catch (error: any) {
             if (error instanceof z.ZodError) {

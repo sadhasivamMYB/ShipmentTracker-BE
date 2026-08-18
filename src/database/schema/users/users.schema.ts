@@ -22,8 +22,6 @@ export const users = pgTable("users", {
 
     role: varchar("role", { length: 30 }).notNull(),
 
-    isActive: boolean("is_active").default(true).notNull(),
-
     createdAt: timestamp("created_at").defaultNow().notNull(),
 
 
