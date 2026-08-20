@@ -11,7 +11,8 @@ export interface AuthRequest extends Request {
 
 export const isAuth = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const token = req.headers.authorization?.split(" ")[1];
+        // const token = req.headers.authorization?.split(" ")[1];
+        const token = req.cookies.auth_token
         if (!token) {
             res.status(401).json({ message: "No token provided, authorization denied" });
             return;

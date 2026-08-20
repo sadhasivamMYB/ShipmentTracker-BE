@@ -8,6 +8,7 @@ import bcrypt from "bcrypt";
 import { generate_OTP } from "../utils/otp-generator";
 import { otp_verification } from "../database/schema";
 import { sendOTPEmail } from "../utils/mailer";
+import { UserStatus } from "../database/enums";
 
 export class AuthService {
 
@@ -37,19 +38,15 @@ export class AuthService {
         if (!user)
             throw new Error("Invalid Credentials");
 
-        if (user.status !== "ACTIVE")
-            throw new Error("Account is inactive Please Contact Admin");
-
         const isValid = await bcrypt.compare(password, user?.password || "");
 
+        if (user.status == UserStatus.INVITED || !user.password) {
+            throw new Error("Please activate your account using the invitation email.");
+        }
 
-        // if (user.status === UserStatus.INVITED || !user.password) {
-        //     throw new Error("Please activate your account using the invitation email.");
-        // }
-
-        // if (user.status === UserStatus.INACTIVE) {
-        //     throw new Error("Your account has been deactivated. Please contact your administrator.");
-        // }
+        if (user.status == UserStatus.INACTIVE) {
+            throw new Error("Your account has been deactivated. Please contact your administrator.");
+        }
 
 
 

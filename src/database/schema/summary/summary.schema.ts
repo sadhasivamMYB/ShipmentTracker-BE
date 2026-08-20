@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, integer, timestamp, decimal } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, integer, timestamp, decimal, jsonb } from "drizzle-orm/pg-core";
 import { workspaces } from "../workspace/workspace.schema";
 
 export const summary = pgTable("summary", {
@@ -40,15 +40,17 @@ export const summary = pgTable("summary", {
 
 
     // Form M fields
-    baNumber: varchar("ba_number", { length: 225 }),
+    bankApplicationNumber: varchar("bank_application_number", { length: 225 }),
     formNumber: varchar("form_number", { length: 225 }),
 
     // PAAR fields
     paarNumber: varchar("paar_number", { length: 225 }),
+    paarIssuedDate: varchar("paar_issued_date", { length: 225 }),
 
     // Export Assessment fields
-    exportAssessmentAmount: decimal("export_assessment_amount", { precision: 15, scale: 2 }),
-    exportAssessmentCno: varchar("export_assessment_cno", { length: 225 }),
+    AssessmentNumber: varchar("assessment_number", { length: 225 }),
+    AssessmentDate: varchar("assessment_date", { length: 225 }),
+    dutyAmount: decimal("duty_amount"),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),

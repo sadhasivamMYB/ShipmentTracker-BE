@@ -7,11 +7,12 @@ import { InviteController } from "../controllers/invite.controller";
 
 const router = Router();
 
+router.get("/me", isAuth, AuthController.me);
 router.post("/register", AuthController.register);
 router.post("/login", LoginLimiter, AuthController.login);
-router.get("/profile", isAuth, AuthController.profile);
 router.post("/verify/otp", VerifyOTPLimiter, OtpController.verifyOTP)
 router.post("/resend/otp", resendOTPLimiter, OtpController.resendOTP)
 router.post("/activate-account", InviteController.activateAccount);
+router.post('/logout', AuthController.logout);
 
 export default router;

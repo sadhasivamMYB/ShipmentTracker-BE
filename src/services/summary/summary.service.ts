@@ -1,5 +1,5 @@
 import { db } from "../../config/database";
-import { ProductLists } from "../../database/schema";
+import { ProductLists, paarProducts } from "../../database/schema";
 import { summary } from "../../database/schema/summary/summary.schema";
 import { eq, ilike, like, or, getTableColumns } from "drizzle-orm";
 
@@ -102,8 +102,9 @@ export class SummaryService {
                     paarNumber: isFirstPfiRow ? row?.paarNumber : "",
 
                     //Export Assessment
-                    exportAssessmentAmount: isFirstPfiRow ? row?.exportAssessmentAmount : "",
-                    exportAssessmentCno: isFirstPfiRow ? row?.exportAssessmentCno : "",
+                    AssessmentNumber: isFirstPfiRow ? row?.AssessmentNumber : "",
+                    AssessmentDate: isFirstPfiRow ? row?.AssessmentDate : "",
+                    DutyAmount: isFirstPfiRow ? row?.dutyAmount : 0,
 
                     //Export PFI
 
@@ -124,6 +125,11 @@ export class SummaryService {
 
     static async getSelectedRowData(pfi: string) {
         const rowData = await db.select().from(ProductLists).where(eq(ProductLists.productPfiId, pfi));
+        return rowData;
+    }
+    static async getPaarProductsRowData(paar: string) {
+
+        const rowData = await db.select().from(paarProducts).where(eq(paarProducts.paarNumberRef, paar));
         return rowData;
     }
 

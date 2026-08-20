@@ -61,12 +61,20 @@ export class OtpController {
                 role: user.role,
             });
 
+            res.cookie('auth_token', token, {
+                httpOnly: true,
+                secure: false,
+                sameSite: 'lax',
+                maxAge: 24 * 60 * 60 * 1000, // 24 hours
+            });
+
             res.json({
                 success: true,
-                data: {
-                    token,
-                    user: user
-                }
+                message: "OTP verified successfully",
+                // data: {
+                //     token,
+                //     user: user
+                // }
             });
         } catch (error: any) {
             res.status(400).json({
