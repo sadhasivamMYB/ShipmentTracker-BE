@@ -5,12 +5,13 @@ import { summary } from "../../database/schema/summary/summary.schema";
 import { documentTypes } from "../../database/schema/documentType/document_type.schema";
 import { eq, and } from "drizzle-orm";
 import fs, { readFileSync } from "fs";
-import path from "path";
+import path, { parse } from "path";
 import Tesseract from "tesseract.js";
 import { PDFParse } from 'pdf-parse';
 import { documentParsers } from "./parsers";
 import { ProductLists } from "../../database/schema/productsLists/productList.schema";
 import { parseToDecimal } from "../../utils/numberHelper";
+import { paarProducts } from "../../database/schema/paarProducts/paar_products.schema";
 
 export class OcrService {
     static async processDocument(uploadId: number, workspaceId: number, documentTypeId: number, filePath: string) {
@@ -37,7 +38,7 @@ export class OcrService {
 
                 const dataBuffer = fs.readFileSync(filePath);
 
-                if (typeName === "paar" || typeName == "form_m") {
+                if (typeName === "paar" || typeName == "form_m" || typeName == "sgd" || typeName == "export_assessment") {
 
 
                     const fileBuffer = readFileSync(filePath);
@@ -48,14 +49,12 @@ export class OcrService {
                     formData.append('file', fileBlob, filePath)
 
 
-                    const response = await fetch(`https://tglushocrappqas.azurewebsites.net/api/v1/file_upload?doc_type=${typeName}`, {
+                    const response = await fetch(`${process.env.AI_SERVICE_BASE_URL}/file_upload?doc_type=${typeName}`, {
                         method: 'POST',
                         body: formData
                     })
                     const body = await response.json();
 
-                    console.log("STATUS:", response.status);
-                    console.log("BODY:", body);
 
                     // await convertPdfToImg(filePath)
                     // const data = await pdfParser.getText();
@@ -79,6 +78,8 @@ export class OcrService {
 
             // 3. Parse with specific parser
             const parsedData = parser(extractedText);
+
+            console.log(parsedData, "✨✨✨✨🔃🔃")
 
             // 4. Save extracted fields to document_fields
             const fieldsToInsert = Object.entries(parsedData)
@@ -139,6 +140,32 @@ export class OcrService {
                                         eq(ProductLists.productCode, p?.productCode!)
                                     ))
                             }))
+                        } else if (typeName == "pfi") {
+                            console.log("UPDATING/INSERTING IN THE PRODUCTLIST PFI VALUES")
+                            await Promise.all(parsedData?.products?.map(async (p: any) => {
+                                const existingProduct = await db.select().from(ProductLists).where(
+                                    and(
+                                        eq(ProductLists.productPfiId, parsedData?.pfiNumber!),
+                                        eq(ProductLists.productCode, p.productCode)
+                                    )
+                                );
+
+                                if (existingProduct.length > 0) {
+                                    await db.update(ProductLists).set({
+                                        productName: p.productName,
+                                        pfi_qty: parseToDecimal(p.qty),
+                                        pfi_netPrice: parseToDecimal(p.netPrice),
+                                    }).where(eq(ProductLists.id, existingProduct[0]?.id));
+                                } else {
+                                    await db.insert(ProductLists).values({
+                                        productPfiId: parsedData?.pfiNumber,
+                                        productCode: p.productCode,
+                                        productName: p.productName,
+                                        pfi_qty: parseToDecimal(p.qty),
+                                        pfi_netPrice: parseToDecimal(p.netPrice),
+                                    });
+                                }
+                            }))
                         }
                     } else {
                         console.log(typeName, "NOT EXISTING SUMMARY")
@@ -151,13 +178,28 @@ export class OcrService {
 
                             if (typeName == "pfi") {
                                 await Promise.all(parsedData?.products?.map(async (p: any) => {
-                                    await tx.insert(ProductLists).values({
-                                        productPfiId: newSummary?.pficode,
-                                        productCode: p.productCode,
-                                        productName: p.productName,
-                                        pfi_qty: parseToDecimal(p.qty),
-                                        pfi_netPrice: parseToDecimal(p.netPrice),
-                                    })
+                                    const existingProduct = await tx.select().from(ProductLists).where(
+                                        and(
+                                            eq(ProductLists.productPfiId, newSummary?.pficode!),
+                                            eq(ProductLists.productCode, p.productCode)
+                                        )
+                                    );
+
+                                    if (existingProduct.length > 0) {
+                                        await tx.update(ProductLists).set({
+                                            productName: p.productName,
+                                            pfi_qty: parseToDecimal(p.qty),
+                                            pfi_netPrice: parseToDecimal(p.netPrice),
+                                        }).where(eq(ProductLists.id, existingProduct[0]?.id));
+                                    } else {
+                                        await tx.insert(ProductLists).values({
+                                            productPfiId: newSummary?.pficode,
+                                            productCode: p.productCode,
+                                            productName: p.productName,
+                                            pfi_qty: parseToDecimal(p.qty),
+                                            pfi_netPrice: parseToDecimal(p.netPrice),
+                                        });
+                                    }
                                 }))
                             }
                             else {
@@ -203,11 +245,16 @@ export class OcrService {
                 } else {
                     finalStatus = 'unmatched';
                 }
-            } else if (['form_m', 'paar', 'eins', 'export_assessment'].includes(typeName)) {
-                const exportPfi = parsedData.refElevCode;
+            } else if (['form_m', 'paar', 'eins', 'sgd'].includes(typeName)) {
+                const exportPfi = typeName == "sgd" ? parsedData?.ref_paarNumber : parsedData.refElevCode;
+
+                console.log(exportPfi, "🙌🙌🙌🙌")
+
+                const condition = typeName == "sgd" ? eq(summary.paarNumber, exportPfi) : eq(summary.eleV8Code, exportPfi)
+
                 if (exportPfi) {
                     const existingSummary = await db.select().from(summary).where(
-                        and(eq(summary.workspaceId, workspaceId), eq(summary.eleV8Code, exportPfi))
+                        and(eq(summary.workspaceId, workspaceId), condition)
                     );
 
                     if (existingSummary.length > 0) {
@@ -221,13 +268,39 @@ export class OcrService {
                             updateData.exportInsurancePremiumAmount = parseToDecimal(parsedData?.EIpremiumAmount);
                         }
                         else if (typeName === 'form_m') {
-                            updateData.baNumber = parsedData.baNumber;
+                            updateData.bankApplicationNumber = parsedData.bankApplicationNumber;
                             updateData.formNumber = parsedData.formNumber;
                         } else if (typeName === 'paar') {
-                            updateData.paarNumber = parsedData.paarNumber;
-                        } else if (typeName === 'export_assessment') {
-                            updateData.exportAssessmentAmount = parseToDecimal(parsedData.exportAssessmentAmount);
-                            updateData.exportAssessmentCno = parsedData.exportAssessmentCno;
+                            updateData.paarNumber = parsedData?.paarNumber;
+                            updateData.paarIssuedDate = parsedData?.issuedDate;
+
+
+                            await Promise.all(parsedData?.GoodAndServices?.map(async (item: any) => {
+                                const existingProduct = await db.select().from(paarProducts).where(
+                                    and(
+                                        eq(paarProducts.paarNumberRef, parsedData?.paarNumber),
+                                        eq(paarProducts.productName, item?.DESCRIPTIONOFGOODS)
+                                    )
+                                );
+
+                                if (existingProduct.length > 0) {
+                                    await db.update(paarProducts).set({
+                                        productQuantity: item?.QUANTITY
+                                    }).where(eq(paarProducts.id, existingProduct[0]?.id));
+                                } else {
+                                    await db.insert(paarProducts).values({
+                                        paarNumberRef: parsedData?.paarNumber,
+                                        productName: item?.DESCRIPTIONOFGOODS,
+                                        productQuantity: item?.QUANTITY
+                                    });
+                                }
+                            }))
+
+
+                        } else if (typeName === 'export_assessment' || typeName === 'sgd') {
+                            updateData.AssessmentNumber = parsedData?.Assessment_No;
+                            updateData.AssessmentDate = parsedData?.Assessment_Date_Of_Issue;
+                            updateData.dutyAmount = parseToDecimal(parsedData?.Duty_Amount);
                         }
 
                         await db.update(summary).set(updateData).where(eq(summary.id, existingSummary[0]?.id!));

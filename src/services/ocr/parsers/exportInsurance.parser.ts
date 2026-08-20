@@ -14,7 +14,7 @@ export type InsuranceFields = {
 export function parseExportInsurance(extractedText: string): Record<string, string | null> {
     const text = normalizeText(extractedText);
 
-    console.log(normalizeText, "Export Insurance")
+    console.log(text, "Export Insurance")
 
     const dateOfIssue = firstMatch(text, /DATE OF ISSUE\s*:\s*([^\n]+)/i);
     const declaredCertNo = firstMatch(text, /DECLARED CERT NO\s*:\s*([^\n]+)/i)?.split(" ")[0] || "";

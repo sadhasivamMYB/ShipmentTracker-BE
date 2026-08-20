@@ -80,4 +80,19 @@ export class SummaryController {
             res.status(500).json({ success: false, message: "Internal server error" });
         }
     }
+
+    static async getPaarProductsRowData(req: Request, res: Response) {
+        try {
+            const { paarNumber } = req.params;
+            if (!paarNumber) {
+                return res.status(400).json({ success: false, message: "paarNumber is required" });
+            }
+
+            const rowData = await SummaryService.getPaarProductsRowData(paarNumber as string);
+            res.status(200).json({ success: true, data: rowData });
+        } catch (error) {
+            console.error("Error in getPaarProductsRowData:", error);
+            res.status(500).json({ success: false, message: "Internal server error" });
+        }
+    }
 }

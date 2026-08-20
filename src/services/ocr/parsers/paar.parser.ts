@@ -1,13 +1,12 @@
 import { firstMatch, normalizeText } from './utils';
 
-export function parsePaar(extractedText: string): Record<string, string | null> {
-    const text = normalizeText(extractedText);
-
-    const exportPfiNumber = firstMatch(text, /EXPORT PFI NO:\s*([^\n]+)/i) || "";
-    const paarNumber = firstMatch(text, /PAAR NUMBER:\s*([^\n]+)/i) || ""
+export function parsePaar(extractedText: any): Record<string, string | null> {
 
     return {
-        exportPfiNumber: exportPfiNumber?.trim(),
-        paarNumber: paarNumber?.trim()
+        refElevCode: extractedText?.INVOICENO,
+        paarNumber: extractedText?.PAARNUMBER,
+        issuedDate: extractedText?.PAARISSUEDATE,
+        GoodAndServices: extractedText?.ITEMS
+
     };
 }

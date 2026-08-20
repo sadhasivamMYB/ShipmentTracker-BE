@@ -11,4 +11,5 @@ router.get("/export", SummaryController.exportSummaryExcel);
 router.get('/row/:pfi', SummaryController.getSelectedRowData)
 router.put('/row/:pfi', SummaryController.updateRow)
 
+router.get('/paar-row/:paarNumber', SummaryController.getPaarProductsRowData)
 export default router;

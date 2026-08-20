@@ -1,6 +1,7 @@
 import "dotenv/config"
 import express from "express"
 import cors from "cors"
+import cookieParser from "cookie-parser"
 import authRoutes from "./routes/auth.routes"
 import workspaceRoutes from "./routes/workspace.routes"
 import uploadRoutes from "./routes/upload.routes"
@@ -36,6 +37,7 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 testConnection().then(() => {
     console.log("Connected to database")

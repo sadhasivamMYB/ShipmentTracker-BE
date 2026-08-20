@@ -4,8 +4,9 @@ import { parseBl } from './bl.parser';
 import { parseExportPfi } from './export_pfi.parser';
 import { parseFormM } from './form_m.parser';
 import { parsePaar } from './paar.parser';
-import { parseExportAssessment } from './export_assessment.parser';
+// import { parseExportAssessment } from './export_assessment.parser';
 import { parseExportInsurance } from './exportInsurance.parser';
+import { parseSgd } from './sgd.parser';
 
 export const documentParsers: Record<string, (text: string) => Record<string, any>> = {
     'pfi': (text) => parsePFI(text, 'pfi'), // Import PFI
@@ -16,5 +17,6 @@ export const documentParsers: Record<string, (text: string) => Record<string, an
     'eins': parseExportInsurance, // Export Insurance
     'form_m': parseFormM, // Form M
     'paar': parsePaar, // PAAR
-    'export_assessment': parseExportAssessment, // Export Assessment
+    'sgd': parseSgd, // SGD or Export Assesment
+    'export_assessment': parseSgd
 };

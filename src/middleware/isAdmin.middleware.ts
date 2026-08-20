@@ -8,11 +8,14 @@ export interface AuthRequest extends Request {
 
 export const isAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
     try {
-        const token = req.headers.authorization?.split(" ")[1];
+        // const token = req.headers.authorization?.split(" ")[1];
+        const token = req.cookies.auth_token
         if (!token) {
             res.status(401).json({ message: "No token provided, authorization denied" });
             return;
         }
+
+
 
         const decoded = verifyToken(token);
         req.user = decoded;

@@ -1,6 +1,9 @@
 import type { Request, Response } from "express";
 
 import { AuthService } from "../services/auth.service";
+import { users } from "../database/schema";
+import { db } from "../config/database";
+import { eq } from "drizzle-orm";
 
 export class AuthController {
 
@@ -25,8 +28,36 @@ export class AuthController {
         }
     }
 
-    static async profile(req: any, res: Response) {
-        res.json(req.user);
+    static async me(req: any, res: Response) {
+        try {
+            const user = await db.query.users.findFirst({
+                where: eq(users.id, req.user.id),
+                columns: {
+                    password: false,
+                }
+            });
+
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+            res.json({ user });
+
+        } catch (error: any) {
+            res.status(500).json({ message: "Failed to fetch user profile" });
+        }
     }
+
+    static async logout(req: Request, res: Response) {
+        // Clear the auth_token cookie.
+        // Note: ensure you match the exact same options (secure, sameSite) you used when creating it!
+        res.clearCookie('auth_token', {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+        });
+
+        res.status(200).json({ message: "Logged out successfully" });
+    };
+
 
 }
