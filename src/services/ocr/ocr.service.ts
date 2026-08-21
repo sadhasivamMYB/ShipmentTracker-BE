@@ -104,7 +104,7 @@ export class OcrService {
                     matchedKey = pfi;
                     const existingSummary = await db.select().from(summary).where(
                         and(eq(summary.workspaceId, workspaceId),
-                            eq(summary.orderPfiNumber, pfi))
+                            eq(summary.pfiNumber, pfi))
                     );
 
                     let updateData: any = {
@@ -112,15 +112,20 @@ export class OcrService {
                     };
 
                     if (typeName === 'pfi') {
-                        updateData.invoiceDate = parsedData?.PfiDate;
+                        updateData.pfiDate = parsedData?.pfiDate;
+                        updateData.pfiFOB = parseToDecimal(parsedData?.pfiFOB);
+                        updateData.pfiFreight = parseToDecimal(parsedData?.pfiFreight);
+                        updateData.pfiTotal = parseToDecimal(parsedData?.pfiTotal);
                     } else if (typeName === 'fi') {
 
                         updateData.fiInvoiceNumber = parsedData?.FI_invoiceNumber;
                         updateData.fiInvoiceDate = parsedData?.FI_invoiceDate;
                         updateData.fiDuePaymentDate = parsedData?.FI_duePaymentDate;
-                        updateData.fiInvoiceLineItemTotal = parseToDecimal(parsedData?.FI_invoiceLineItemTotal);
+                        updateData.fiFob = parseToDecimal(parsedData?.FI_invoiceLineItemTotal);
                         updateData.fiFreight = parseToDecimal(parsedData?.FI_freight);
-                        updateData.fiInvoiceTotal = parseToDecimal(parsedData?.FI_invoiceTotal);
+                        updateData.fiTotal = parseToDecimal(parsedData?.FI_invoiceTotal);
+                        updateData.fiNetWeight = parseToDecimal(parsedData?.FI_netWeight);
+                        updateData.fiGrossWeight = parseToDecimal(parsedData?.FI_grossWeight);
                     }
 
                     if (existingSummary.length > 0) {
@@ -172,9 +177,9 @@ export class OcrService {
                         await db.transaction(async (tx) => {
                             const [newSummary] = await tx.insert(summary).values({
                                 workspaceId,
-                                orderPfiNumber: pfi,
+                                pfiNumber: pfi,
                                 ...updateData
-                            }).returning({ pficode: summary.orderPfiNumber });
+                            }).returning({ pficode: summary.pfiNumber });
 
                             if (typeName == "pfi") {
                                 await Promise.all(parsedData?.products?.map(async (p: any) => {
@@ -218,7 +223,7 @@ export class OcrService {
 
                 if (pfi) {
                     const existingSummary = await db.select().from(summary).where(
-                        and(eq(summary.workspaceId, workspaceId), eq(summary.orderPfiNumber, pfi))
+                        and(eq(summary.workspaceId, workspaceId), eq(summary.pfiNumber, pfi))
                     );
 
                     if (existingSummary.length > 0) {
@@ -227,15 +232,14 @@ export class OcrService {
 
                         let updateData: any = { updatedAt: new Date() };
                         if (typeName === 'iins') {
-                            updateData.insuranceNaicomId = parsedData.naicomId;
-                            updateData.insuranceDateOfIssue = parsedData.IIdateOfIssue;
-                            updateData.insurancePremiumAmount = parseToDecimal(parsedData.IIpremiumAmount);
-                            updateData.insuranceDeclaredCertNo = parsedData.IIdeclaredCertNo;
+                            updateData.naicomId = parsedData.naicomId;
+                            updateData.iiDateOfIssue = parsedData.iiDateOfIssue;
+                            updateData.iiPremiumAmount = parseToDecimal(parsedData.iiPremiumAmount);
+                            updateData.iiDeclaredCertNo = parsedData.iiDeclaredCertNo;
                         } else if (typeName === 'bl') {
-                            updateData.blReference = parsedData.blReference;
+                            updateData.blNumber = parsedData.blReference;
                         } else if (typeName === 'export_pfi') {
-                            updateData.exportPfiNumber = parsedData.pfiNumber;
-                            updateData.eleV8Code = parsedData.eleV8Code;
+                            updateData.exportEleV8Code = parsedData.exportEleV8Code;
                         }
 
                         await db.update(summary).set(updateData).where(eq(summary?.id, Number(existingSummary[0]?.id)));
@@ -250,7 +254,7 @@ export class OcrService {
 
                 console.log(exportPfi, "🙌🙌🙌🙌")
 
-                const condition = typeName == "sgd" ? eq(summary.paarNumber, exportPfi) : eq(summary.eleV8Code, exportPfi)
+                const condition = typeName == "sgd" ? eq(summary.paarNumber, exportPfi) : eq(summary.exportEleV8Code, exportPfi)
 
                 if (exportPfi) {
                     const existingSummary = await db.select().from(summary).where(
@@ -263,9 +267,9 @@ export class OcrService {
 
                         let updateData: any = { updatedAt: new Date() };
                         if (typeName === 'eins') {
-                            updateData.exportInsuranceDateOfIssue = parsedData?.EIdateOfIssue;
-                            updateData.exportInsuranceDeclaredCertNo = parsedData?.EIdeclaredCertNo;
-                            updateData.exportInsurancePremiumAmount = parseToDecimal(parsedData?.EIpremiumAmount);
+                            updateData.exportInsuranceDateOfIssue = parsedData?.exportInsuranceDateOfIssue;
+                            updateData.exportInsuranceDeclaredCertNo = parsedData?.exportInsuranceDeclaredCertNo;
+                            updateData.exportInsurancePremiumAmount = parseToDecimal(parsedData?.exportInsurancePremiumAmount);
                         }
                         else if (typeName === 'form_m') {
                             updateData.bankApplicationNumber = parsedData.bankApplicationNumber;

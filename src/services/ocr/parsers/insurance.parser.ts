@@ -42,12 +42,12 @@ export function parseInsurance(extractedText: string): Record<string, string | n
 
     return {
         pfiNumber: proformaInvoiceNo, // The link key
-        IIdateOfIssue: dateOfIssue,
-        IIdeclaredCertNo: declaredCertNo?.trim(),
+        iiDateOfIssue: dateOfIssue,
+        iiDeclaredCertNo: declaredCertNo?.trim(),
         naicomId: naicomId,
         // proformaInvoiceDate: proformaInvoiceDate,
-        // IIsumInsured: sumInsured,
-        IIpremiumAmount: premium,
-        // IIexchangeRate: exchangeRate,
+        // sumInsured: sumInsured,
+        iiPremiumAmount: premium,
+        // exchangeRate: exchangeRate,
     };
 }

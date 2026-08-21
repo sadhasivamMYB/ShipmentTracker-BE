@@ -1,11 +1,23 @@
 import { z } from "zod";
 
 export const UpdateSummarySchema = z.object({
-    invoiceDate: z.string().optional().nullable(),
+    pfiDate: z.string().optional().nullable(),
     fiInvoiceNumber: z.string().optional().nullable(),
     fiInvoiceDate: z.string().optional().nullable(),
     fiDuePaymentDate: z.string().optional().nullable(),
-    fiInvoiceLineItemTotal: z.preprocess(
+    pfiFOB: z.preprocess(
+        (val) => (val === "" || val === null ? undefined : Number(val)),
+        z.number().optional()
+    ),
+    pfiFreight: z.preprocess(
+        (val) => (val === "" || val === null ? undefined : Number(val)),
+        z.number().optional()
+    ),
+    pfiTotal: z.preprocess(
+        (val) => (val === "" || val === null ? undefined : Number(val)),
+        z.number().optional()
+    ),
+    fiFob: z.preprocess(
         (val) => (val === "" || val === null ? undefined : Number(val)),
         z.number().optional()
     ),
@@ -13,32 +25,39 @@ export const UpdateSummarySchema = z.object({
         (val) => (val === "" || val === null ? undefined : Number(val)),
         z.number().optional()
     ),
-    fiInvoiceTotal: z.preprocess(
+    fiTotal: z.preprocess(
         (val) => (val === "" || val === null ? undefined : Number(val)),
         z.number().optional()
     ),
-    insuranceNaicomId: z.string().optional().nullable(),
-    insuranceDateOfIssue: z.string().optional().nullable(),
-    insurancePremiumAmount: z.preprocess(
+    fiNetWeight: z.preprocess(
         (val) => (val === "" || val === null ? undefined : Number(val)),
         z.number().optional()
     ),
-    insuranceDeclaredCertNo: z.string().optional().nullable(),
-    blReference: z.string().optional().nullable(),
-    exportPfiNumber: z.string().optional().nullable(),
-    eleV8Code: z.string().optional().nullable(),
+    fiGrossWeight: z.preprocess(
+        (val) => (val === "" || val === null ? undefined : Number(val)),
+        z.number().optional()
+    ),
+    naicomId: z.string().optional().nullable(),
+    iiDateOfIssue: z.string().optional().nullable(),
+    iiPremiumAmount: z.preprocess(
+        (val) => (val === "" || val === null ? undefined : Number(val)),
+        z.number().optional()
+    ),
+    iiDeclaredCertNo: z.string().optional().nullable(),
+    blNumber: z.string().optional().nullable(),
+    exportEleV8Code: z.string().optional().nullable(),
     exportInsuranceDateOfIssue: z.string().optional().nullable(),
     exportInsuranceDeclaredCertNo: z.string().optional().nullable(),
     exportInsurancePremiumAmount: z.preprocess(
         (val) => (val === "" || val === null ? undefined : Number(val)),
         z.number().optional()
     ),
-    baNumber: z.string().optional().nullable(),
+    bankApplicationNumber: z.string().optional().nullable(),
     formNumber: z.string().optional().nullable(),
     paarNumber: z.string().optional().nullable(),
-    exportAssessmentAmount: z.preprocess(
+    dutyAmount: z.preprocess(
         (val) => (val === "" || val === null ? undefined : Number(val)),
         z.number().optional()
     ),
-    exportAssessmentCno: z.string().optional().nullable(),
+    AssessmentNumber: z.string().optional().nullable(),
 });

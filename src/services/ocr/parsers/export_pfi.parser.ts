@@ -9,6 +9,6 @@ export function parseExportPfi(extractedText: string): Record<string, string | n
 
     return {
         pfiNumber, // Matches order
-        eleV8Code: eleV8Code, // Becomes link key for form_m, paar, assessment
+        exportEleV8Code: eleV8Code, // Becomes link key for form_m, paar, assessment
     };
 }
