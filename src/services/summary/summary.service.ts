@@ -100,7 +100,9 @@ export class SummaryService {
                         fiTotal: isFirstPfiRow ? toNumber(sumRow.fiTotal) : null,
 
                         //BL
-                        blReference: isFirstPfiRow ? sumRow.blNumber : null,
+                        blNumber: isFirstPfiRow ? sumRow.blNumber : null,
+                        containerNumber: isFirstPfiRow ? sumRow.containerNumber : null,
+                        sealNumber: isFirstPfiRow ? sumRow.sealNumber : null,
 
                         //Export PFI
                         eleV8Code: isFirstPfiRow ? sumRow.exportEleV8Code : null,

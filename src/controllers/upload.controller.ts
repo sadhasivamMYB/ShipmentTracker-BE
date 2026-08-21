@@ -25,9 +25,28 @@ export class UploadController {
             );
 
             res.status(200).json({ success: true, data: uploadRecord });
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error in uploadDocument:", error);
-            res.status(500).json({ success: false, message: "Internal server error during upload" });
+            
+            // Delete the file if validation or processing fails
+            if (req.file && req.file.path) {
+                try {
+                    const fs = require('fs');
+                    if (fs.existsSync(req.file.path)) {
+                        fs.unlinkSync(req.file.path);
+                    }
+                } catch (cleanupError) {
+                    console.error("Failed to delete temp file:", cleanupError);
+                }
+            }
+
+            // Return 400 for validation errors, 500 otherwise
+            const statusCode = error.message && error.message.includes("Document unmatched") ? 400 : 500;
+            res.status(statusCode).json({ 
+                success: false, 
+                message: error.message || String(error) || "Internal server error during upload",
+                stack: error.stack
+            });
         }
     }
 }

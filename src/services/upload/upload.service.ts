@@ -12,34 +12,32 @@ export class UploadService {
         userId: number,
         file: Express.Multer.File
     ) {
-        // Document Replacement Rule:
-        // Remove previously extracted fields related to old uploads for this exact doc type in this workspace
-        const [documentTypeId] = await db.select({ id: documentTypes.id }).from(documentTypes).where(eq(documentTypes.documentCode, documentTypeCode))
-        // const previousUploads = await db.select().from(documentUploads).where(
-        //     eq(documentUploads.workspaceId, workspaceId)
-        // );
-        // const prevDocUpload = previousUploads.find(u => u.documentTypeId === documentTypeId?.id);
+        const [documentTypeId] = await db.select({ id: documentTypes.id }).from(documentTypes).where(eq(documentTypes.documentCode, documentTypeCode));
 
-        // if (prevDocUpload) {
-        //     // Delete old document fields
-        //     await db.delete(documentFields).where(eq(documentFields.documentId, prevDocUpload.id));
+        // 1. Run OCR and Validation first!
+        // This will throw an error if the document is unmatched (e.g. no parent PFI/Export PFI)
+        const ocrResult = await OcrService.processAndValidate(workspaceId, documentTypeId?.id!, file.path);
 
-        //     // Delete old document upload record
-        //     await db.delete(documentUploads).where(eq(documentUploads.id, prevDocUpload.id));
-        // }
-
-        // Insert new document upload
+        // 2. If it passed validation, insert the document upload record
         const [newUpload] = await db.insert(documentUploads).values({
             workspaceId,
             documentTypeId: documentTypeId?.id!,
             fileName: file.originalname,
             filePath: file.path,
             uploadedBy: userId,
-            status: 'processing'
+            status: 'merged' // Status is now automatically merged since validation passed
         }).returning();
 
-        // Trigger OCR (Async or await depending on needs)
-        await OcrService.processDocument(newUpload?.id!, workspaceId, documentTypeId?.id!, file.path);
+        // 3. Save extracted fields and merge into summary table
+        await OcrService.saveAndMerge(
+            newUpload?.id!,
+            workspaceId,
+            ocrResult.typeName,
+            ocrResult.extractedText,
+            ocrResult.parsedData,
+            ocrResult.matchedKey,
+            ocrResult.existingSummaryRecord
+        );
 
         return newUpload;
     }
