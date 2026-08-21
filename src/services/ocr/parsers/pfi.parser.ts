@@ -125,7 +125,17 @@ export function parsePFI(
         /Invoice Total USD\s*([\d,]+\.\d{2})/i
     );
 
+    let fiNetWeight = null;
+    let fiGrossWeight = null;
+
     if (typePFI) {
+        const weightRegex = /Total Cube\(M3\)\s+([\d,]+)\s+([\d,]+\.\d+)\s+([\d,]+\.\d+)/i;
+        const weightMatch = extractedText.match(weightRegex);
+        if (weightMatch) {
+            fiGrossWeight = weightMatch[2];
+            fiNetWeight = weightMatch[3];
+        }
+
         return {
             pfiNumber: pfiNumber,
             FI_invoiceNumber: FI_invoiceNumber,
@@ -135,15 +145,17 @@ export function parsePFI(
             FI_invoiceLineItemTotal: invoiceLineItemTotal?.trim(),
             FI_freight: freight?.trim(),
             FI_invoiceTotal: invoiceTotal?.trim(),
+            FI_netWeight: fiNetWeight,
+            FI_grossWeight: fiGrossWeight,
         };
     } else {
         return {
             pfiNumber: pfiNumber,
-            PfiDate: invoiceDate,
+            pfiDate: invoiceDate,
             products,
-            invoiceLineItemTotal: invoiceLineItemTotal?.trim(),
-            freight: freight?.trim(),
-            invoiceTotal: invoiceTotal?.trim(),
+            pfiFOB: invoiceLineItemTotal?.trim(),
+            pfiFreight: freight?.trim(),
+            pfiTotal: invoiceTotal?.trim(),
         };
     }
 }

@@ -1,7 +1,7 @@
 import { db } from "../../config/database";
 import { ProductLists, paarProducts } from "../../database/schema";
 import { summary } from "../../database/schema/summary/summary.schema";
-import { eq, ilike, like, or, getTableColumns } from "drizzle-orm";
+import { eq, ilike, like, or, getTableColumns, inArray } from "drizzle-orm";
 
 export class SummaryService {
     static async getWorkspaceSummary(workspaceId: number | null, search?: string) {
@@ -10,8 +10,8 @@ export class SummaryService {
         if (search && search.trim() !== '') {
             // If there is a search keyword, ignore the workspace and return only matching data
             conditions = or(
-                ilike(summary.orderPfiNumber, `%${search}%`),
-                ilike(summary.blReference, `%${search}%`)
+                ilike(summary.pfiNumber, `%${search}%`),
+                ilike(summary.blNumber, `%${search}%`)
             );
         } else if (workspaceId && !Number.isNaN(workspaceId)) {
             // Default: use the workspaceId
@@ -27,13 +27,11 @@ export class SummaryService {
 
         // Map them to the frontend's expected format
         const formattedSummary = workspaceSummaries.map(row => {
-            const { id, workspaceId, orderPfiNumber, createdAt, updatedAt, ...rest } = row;
+            const { id, workspaceId, createdAt, updatedAt, ...rest } = row;
 
-            // Reconstruct row with `pfiNumber` instead of `orderPfiNumber`
             // Ensure any null values are passed as null so the frontend can handle the `-` fallback
             return {
                 id,
-                pfiNumber: orderPfiNumber,
                 ...rest
             };
         });
@@ -46,74 +44,101 @@ export class SummaryService {
         try {
 
 
-            const ExportData = await db.select({
-                ...getTableColumns(summary),
-                productCode: ProductLists.productCode,
-                productName: ProductLists.productName,
-                FI_productQty: ProductLists.fi_qty,
-                FI_productPrice: ProductLists.fi_netPrice,
-                PFI_productQty: ProductLists.pfi_qty,
-                PFI_productPrice: ProductLists.pfi_netPrice,
-            }).from(summary)
-                .innerJoin(ProductLists, eq(summary.orderPfiNumber, ProductLists.productPfiId)).where(eq(summary.workspaceId, workspaceId))
+            const summaries = await db.select().from(summary).where(eq(summary.workspaceId, workspaceId));
 
-            const exportedData = ExportData?.map((row, index, array) => {
-                const previousRow = array[index - 1];
+            const pfiNumbers = summaries.map(s => s.pfiNumber).filter(Boolean) as string[];
+            const paarNumbers = summaries.map(s => s.paarNumber).filter(Boolean) as string[];
 
-                const isFirstPfiRow =
-                    !previousRow ||
-                    previousRow.orderPfiNumber !== row.orderPfiNumber;
+            let allProducts: any[] = [];
+            if (pfiNumbers.length > 0) {
+                allProducts = await db.select().from(ProductLists).where(inArray(ProductLists.productPfiId, pfiNumbers));
+            }
 
-                return {
-                    ...row,
-                    workspaceId: "",
-                    orderPfiNumber: "",
-                    PFI_NUMBER: isFirstPfiRow ? row?.orderPfiNumber : "",
-                    insuranceDateOfIssue: isFirstPfiRow ? row.insuranceDateOfIssue : "",
-                    insuranceNaicomId: isFirstPfiRow ? row?.insuranceNaicomId : "",
-                    insurancePremiumAmount: isFirstPfiRow ? Number(row?.insurancePremiumAmount) : 0,
-                    insuranceDeclaredCertNo: isFirstPfiRow ? row?.insuranceDeclaredCertNo : "",
+            let allPaarProducts: any[] = [];
+            if (paarNumbers.length > 0) {
+                allPaarProducts = await db.select().from(paarProducts).where(inArray(paarProducts.paarNumberRef, paarNumbers));
+            }
 
-                    //Fi
-                    fiInvoiceNumber: isFirstPfiRow ? row?.fiInvoiceNumber : "",
-                    fiInvoiceDate: isFirstPfiRow ? row?.fiInvoiceDate : "",
-                    fiDuePaymentDate: isFirstPfiRow ? row?.fiDuePaymentDate : "",
-                    fiInvoiceLineItemTotal: isFirstPfiRow ? Number(row?.fiInvoiceLineItemTotal) : 0,
-                    fiFreight: isFirstPfiRow ? Number(row?.fiFreight) : 0,
-                    fiInvoiceTotal: isFirstPfiRow ? Number(row?.fiInvoiceTotal) : 0,
+            const exportedData: any[] = [];
+            const toNumber = (val: any) => (val && !isNaN(Number(val))) ? Number(val) : null;
 
-                    //BL
-                    blReference: isFirstPfiRow ? row?.blReference : "",
+            for (const sumRow of summaries) {
+                const prods = allProducts.filter(p => p.productPfiId === sumRow.pfiNumber);
+                const pProds = allPaarProducts.filter(p => p.paarNumberRef === sumRow.paarNumber);
 
-                    //Export PFI
-                    exportPfiNumber: "",
-                    eleV8Code: isFirstPfiRow ? row?.eleV8Code : "",
+                const maxRows = Math.max(1, prods.length, pProds.length);
 
-                    //Export Insurance
-                    exportInsuranceDateOfIssue: isFirstPfiRow ? row?.exportInsuranceDateOfIssue : "",
-                    exportInsuranceDeclaredCertNo: isFirstPfiRow ? row?.exportInsuranceDeclaredCertNo : "",
-                    exportInsurancePremiumAmount: isFirstPfiRow ? Number(row?.exportInsurancePremiumAmount) : 0,
+                for (let i = 0; i < maxRows; i++) {
+                    const isFirstPfiRow = (i === 0);
+                    const prod = prods[i] || {};
+                    const pProd = pProds[i] || {};
 
-                    //Form M
-                    formNumber: isFirstPfiRow ? row?.formNumber : "",
+                    exportedData.push({
+                        ...sumRow,
+                        workspaceId: null,
+                        pfiNumber: isFirstPfiRow ? sumRow.pfiNumber : null,
+                        pfiDate: isFirstPfiRow ? sumRow.pfiDate : null,
+                        pfiFOB: isFirstPfiRow ? toNumber(sumRow.pfiFOB) : null,
+                        pfiFreight: isFirstPfiRow ? toNumber(sumRow.pfiFreight) : null,
+                        pfiTotal: isFirstPfiRow ? toNumber(sumRow.pfiTotal) : null,
 
+                        insuranceDateOfIssue: isFirstPfiRow ? sumRow.iiDateOfIssue : null,
+                        insuranceNaicomId: isFirstPfiRow ? sumRow.naicomId : null,
+                        insurancePremiumAmount: isFirstPfiRow ? toNumber(sumRow.iiPremiumAmount) : null,
+                        insuranceDeclaredCertNo: isFirstPfiRow ? sumRow.iiDeclaredCertNo : null,
 
-                    //PAAR
-                    paarNumber: isFirstPfiRow ? row?.paarNumber : "",
+                        //Fi
+                        fiInvoiceNumber: isFirstPfiRow ? sumRow.fiInvoiceNumber : null,
+                        fiInvoiceDate: isFirstPfiRow ? sumRow.fiInvoiceDate : null,
+                        fiDuePaymentDate: isFirstPfiRow ? sumRow.fiDuePaymentDate : null,
+                        fiInvoiceLineItemTotal: isFirstPfiRow ? toNumber(sumRow.fiFob) : null,
+                        fiFreight: isFirstPfiRow ? toNumber(sumRow.fiFreight) : null,
+                        fiInvoiceTotal: isFirstPfiRow ? toNumber(sumRow.fiTotal) : null,
+                        fiNetWeight: isFirstPfiRow ? toNumber(sumRow.fiNetWeight) : null,
+                        fiGrossWeight: isFirstPfiRow ? toNumber(sumRow.fiGrossWeight) : null,
+                        fiFob: isFirstPfiRow ? toNumber(sumRow.fiFob) : null,
+                        fiTotal: isFirstPfiRow ? toNumber(sumRow.fiTotal) : null,
 
-                    //Export Assessment
-                    AssessmentNumber: isFirstPfiRow ? row?.AssessmentNumber : "",
-                    AssessmentDate: isFirstPfiRow ? row?.AssessmentDate : "",
-                    DutyAmount: isFirstPfiRow ? row?.dutyAmount : 0,
+                        //BL
+                        blNumber: isFirstPfiRow ? sumRow.blNumber : null,
+                        containerNumber: isFirstPfiRow ? sumRow.containerNumber : null,
+                        sealNumber: isFirstPfiRow ? sumRow.sealNumber : null,
 
-                    //Export PFI
+                        //Export PFI
+                        eleV8Code: isFirstPfiRow ? sumRow.exportEleV8Code : null,
 
+                        //Export Insurance
+                        exportInsuranceDateOfIssue: isFirstPfiRow ? sumRow.exportInsuranceDateOfIssue : null,
+                        exportInsuranceDeclaredCertNo: isFirstPfiRow ? sumRow.exportInsuranceDeclaredCertNo : null,
+                        exportInsurancePremiumAmount: isFirstPfiRow ? toNumber(sumRow.exportInsurancePremiumAmount) : null,
 
+                        //Form M
+                        formNumber: isFirstPfiRow ? sumRow.formNumber : null,
 
+                        //PAAR
+                        paarNumber: isFirstPfiRow ? sumRow.paarNumber : null,
+
+                        //Export Assessment
+                        AssessmentNumber: isFirstPfiRow ? sumRow.AssessmentNumber : null,
+                        AssessmentDate: isFirstPfiRow ? sumRow.AssessmentDate : null,
+                        DutyAmount: isFirstPfiRow ? toNumber(sumRow.dutyAmount) : null,
+
+                        // Products mapped per row
+                        productCode: prod.productCode || null,
+                        productName: prod.productName || null,
+                        FI_productQty: prod.fi_qty ? toNumber(prod.fi_qty) : null,
+                        FI_productPrice: prod.fi_netPrice ? toNumber(prod.fi_netPrice) : null,
+                        PFI_productQty: prod.pfi_qty ? toNumber(prod.pfi_qty) : null,
+                        PFI_productPrice: prod.pfi_netPrice ? toNumber(prod.pfi_netPrice) : null,
+
+                        // PAAR Products mapped per row
+                        paarProductName: pProd.productName || null,
+                        paarProductQty: pProd.productQuantity ? toNumber(pProd.productQuantity) : null,
+                    });
                 }
-            })
+            }
 
-            return exportedData
+            return exportedData;
 
 
         }
@@ -140,7 +165,7 @@ export class SummaryService {
                 ...data,
                 updatedAt: new Date()
             })
-            .where(eq(summary.orderPfiNumber, pfi))
+            .where(eq(summary.pfiNumber, pfi))
             .returning();
 
         if (!updatedSummary) {

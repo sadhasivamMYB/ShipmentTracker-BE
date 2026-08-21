@@ -1,18 +1,18 @@
 import exceljs from "exceljs";
 
 export class ExcelService {
-    static async generateExcelBuffer(data: any[]): Promise<Buffer> {
+    static async generateExcelBuffer(data: any): Promise<any> {
         const workbook = new exceljs.Workbook();
         const worksheet = workbook.addWorksheet("Monthly Summary");
 
         if (data.length === 0) {
             worksheet.addRow(["No data available"]);
-            return (await workbook.xlsx.writeBuffer()) as Buffer;
+            return (await workbook.xlsx.writeBuffer()) as any;
         }
 
         // Get all dynamic keys across all rows for columns
         const allKeys = new Set<string>();
-        data.forEach(row => {
+        data.forEach((row: any) => {
             Object.keys(row).forEach(key => {
                 if (key !== 'id') allKeys.add(key); // exclude internal ID
             });
@@ -33,6 +33,6 @@ export class ExcelService {
 
         worksheet.addRows(data);
 
-        return (await workbook.xlsx.writeBuffer()) as Buffer;
+        return (await workbook.xlsx.writeBuffer()) as any;
     }
 }

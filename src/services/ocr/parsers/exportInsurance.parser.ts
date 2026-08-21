@@ -44,12 +44,12 @@ export function parseExportInsurance(extractedText: string): Record<string, stri
 
     return {
         refElevCode: Elev8Code.trim(), // The link key
-        EIdateOfIssue: dateOfIssue,
-        EIdeclaredCertNo: declaredCertNo.trim(),
+        exportInsuranceDateOfIssue: dateOfIssue,
+        exportInsuranceDeclaredCertNo: declaredCertNo.trim(),
         // naicomId: naicomId,
         // proformaInvoiceDate: proformaInvoiceDate,
         // EIsumInsured: sumInsured,
-        EIpremiumAmount: premium,
+        exportInsurancePremiumAmount: premium,
         // EIexchangeRate: exchangeRate,
     };
 }
