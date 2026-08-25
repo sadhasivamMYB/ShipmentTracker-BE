@@ -150,7 +150,7 @@ export class OcrService {
                 );
 
                 if (pfiSummary.length > 0) {
-                    await db.update(summary).set(updateData).where(eq(summary.id, pfiSummary[0]?.id));
+                    await db.update(summary).set(updateData).where(eq(summary.id, pfiSummary[0]?.id!));
                     await Promise.all(parsedData?.products?.map(async (p: any) => {
                         const existingProduct = await db.select().from(ProductLists).where(
                             and(eq(ProductLists.productPfiId, pfi), eq(ProductLists.productCode, p.productCode))
@@ -161,7 +161,7 @@ export class OcrService {
                                 productName: p.productName,
                                 pfi_qty: parseToDecimal(p.qty),
                                 pfi_netPrice: parseToDecimal(p.netPrice),
-                            }).where(eq(ProductLists.id, existingProduct[0]?.id));
+                            }).where(eq(ProductLists.id, existingProduct[0]?.id!));
                         } else {
                             await db.insert(ProductLists).values({
                                 productPfiId: pfi,
@@ -190,7 +190,7 @@ export class OcrService {
                                     productName: p.productName,
                                     pfi_qty: parseToDecimal(p.qty),
                                     pfi_netPrice: parseToDecimal(p.netPrice),
-                                }).where(eq(ProductLists.id, existingProduct[0]?.id));
+                                }).where(eq(ProductLists.id, existingProduct[0]?.id!));
                             } else {
                                 await tx.insert(ProductLists).values({
                                     productPfiId: newSummary?.pficode,
@@ -262,7 +262,7 @@ export class OcrService {
                         if (existingProduct.length > 0) {
                             await db.update(paarProducts).set({
                                 productQuantity: item?.QUANTITY
-                            }).where(eq(paarProducts.id, existingProduct[0]?.id));
+                            }).where(eq(paarProducts.id, existingProduct[0]?.id!));
                         } else {
                             await db.insert(paarProducts).values({
                                 paarNumberRef: parsedData?.paarNumber,
