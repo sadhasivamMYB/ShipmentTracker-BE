@@ -1,7 +1,5 @@
 export function parseSgd(extractedText: any): Record<string, string | null> {
 
-    console.log(extractedText, "🔃🔃🔃🔃🏢")
-
     return {
         ref_paarNumber: extractedText?.PAARNUMBER,
         Assessment_No: extractedText?.SGDREGISTRATIONNO,
