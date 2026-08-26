@@ -1,9 +1,76 @@
 {
-  "id": "d5ff8bd5-fb11-4c04-815c-d05ca355f691",
+  "id": "7edbfeb5-cf36-47d5-908b-b4c63cd1f702",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.product_lists": {
+      "name": "product_lists",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "product_pfi_id": {
+          "name": "product_pfi_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "product_code": {
+          "name": "product_code",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "product_name": {
+          "name": "product_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pfi_qty": {
+          "name": "pfi_qty",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pfi_netPrice": {
+          "name": "pfi_netPrice",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fob_value": {
+          "name": "fob_value",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fi_qty": {
+          "name": "fi_qty",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fi_netPrice": {
+          "name": "fi_netPrice",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.document_fields": {
       "name": "document_fields",
       "schema": "",
@@ -78,11 +145,25 @@
           "primaryKey": false,
           "notNull": true
         },
+        "document_code": {
+          "name": "document_code",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
         "description": {
           "name": "description",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "document_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
         },
         "created_at": {
           "name": "created_at",
@@ -101,6 +182,13 @@
           "nullsNotDistinct": false,
           "columns": [
             "name"
+          ]
+        },
+        "document_types_document_code_unique": {
+          "name": "document_types_document_code_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "document_code"
           ]
         }
       },
@@ -148,8 +236,14 @@
           "primaryKey": false,
           "notNull": false
         },
-        "matched_key": {
-          "name": "matched_key",
+        "reference_key": {
+          "name": "reference_key",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reference_value": {
+          "name": "reference_value",
           "type": "varchar(100)",
           "primaryKey": false,
           "notNull": false
@@ -223,8 +317,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.field_definitions": {
-      "name": "field_definitions",
+    "public.otp_verification": {
+      "name": "otp_verification",
       "schema": "",
       "columns": {
         "id": {
@@ -233,26 +327,33 @@
           "primaryKey": true,
           "notNull": true
         },
-        "document_type_id": {
-          "name": "document_type_id",
+        "user_id": {
+          "name": "user_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
-        "field_name": {
-          "name": "field_name",
-          "type": "varchar(100)",
+        "otp": {
+          "name": "otp",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "field_type": {
-          "name": "field_type",
-          "type": "varchar(50)",
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true
         },
-        "is_required": {
-          "name": "is_required",
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "verified": {
+          "name": "verified",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -267,29 +368,15 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "field_definitions_document_type_id_document_types_id_fk": {
-          "name": "field_definitions_document_type_id_document_types_id_fk",
-          "tableFrom": "field_definitions",
-          "tableTo": "document_types",
-          "columnsFrom": [
-            "document_type_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.registration_fields": {
-      "name": "registration_fields",
+    "public.paar_products": {
+      "name": "paar_products",
       "schema": "",
       "columns": {
         "id": {
@@ -298,139 +385,27 @@
           "primaryKey": true,
           "notNull": true
         },
-        "registration_id": {
-          "name": "registration_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "field_definition_id": {
-          "name": "field_definition_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "document_upload_id": {
-          "name": "document_upload_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "extracted_value": {
-          "name": "extracted_value",
-          "type": "varchar(500)",
+        "paar_number_ref": {
+          "name": "paar_number_ref",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false
         },
-        "extracted_at": {
-          "name": "extracted_at",
-          "type": "timestamp",
+        "product_name": {
+          "name": "product_name",
+          "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
+          "notNull": false
+        },
+        "product_quantity": {
+          "name": "product_quantity",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "registration_fields_registration_id_registrations_id_fk": {
-          "name": "registration_fields_registration_id_registrations_id_fk",
-          "tableFrom": "registration_fields",
-          "tableTo": "registrations",
-          "columnsFrom": [
-            "registration_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "registration_fields_field_definition_id_field_definitions_id_fk": {
-          "name": "registration_fields_field_definition_id_field_definitions_id_fk",
-          "tableFrom": "registration_fields",
-          "tableTo": "field_definitions",
-          "columnsFrom": [
-            "field_definition_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "registration_fields_document_upload_id_document_uploads_id_fk": {
-          "name": "registration_fields_document_upload_id_document_uploads_id_fk",
-          "tableFrom": "registration_fields",
-          "tableTo": "document_uploads",
-          "columnsFrom": [
-            "document_upload_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.registrations": {
-      "name": "registrations",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "workspace_id": {
-          "name": "workspace_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "pfi_number": {
-          "name": "pfi_number",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "registrations_workspace_id_workspaces_id_fk": {
-          "name": "registrations_workspace_id_workspaces_id_fk",
-          "tableFrom": "registrations",
-          "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -453,93 +428,189 @@
           "primaryKey": false,
           "notNull": true
         },
-        "order_pfi_number": {
-          "name": "order_pfi_number",
-          "type": "varchar(100)",
+        "pfi_number": {
+          "name": "pfi_number",
+          "type": "varchar(225)",
           "primaryKey": false,
           "notNull": true
         },
-        "invoice_date": {
-          "name": "invoice_date",
-          "type": "varchar(100)",
+        "pfi_date": {
+          "name": "pfi_date",
+          "type": "varchar(225)",
           "primaryKey": false,
           "notNull": false
         },
-        "product_name": {
-          "name": "product_name",
-          "type": "varchar(255)",
+        "pfi_fob": {
+          "name": "pfi_fob",
+          "type": "numeric(15, 2)",
           "primaryKey": false,
           "notNull": false
         },
-        "qty": {
-          "name": "qty",
-          "type": "varchar(100)",
+        "pfi_freight": {
+          "name": "pfi_freight",
+          "type": "numeric(15, 2)",
           "primaryKey": false,
           "notNull": false
         },
-        "net_price": {
-          "name": "net_price",
-          "type": "varchar(100)",
+        "pfi_total": {
+          "name": "pfi_total",
+          "type": "numeric(15, 2)",
           "primaryKey": false,
           "notNull": false
         },
-        "insurance_naicom_id": {
-          "name": "insurance_naicom_id",
-          "type": "varchar(100)",
+        "fi_invoice_number": {
+          "name": "fi_invoice_number",
+          "type": "varchar(225)",
           "primaryKey": false,
           "notNull": false
         },
-        "insurance_date_of_issue": {
-          "name": "insurance_date_of_issue",
-          "type": "varchar(100)",
+        "fi_invoice_date": {
+          "name": "fi_invoice_date",
+          "type": "varchar(225)",
           "primaryKey": false,
           "notNull": false
         },
-        "insurance_premium_amount": {
-          "name": "insurance_premium_amount",
-          "type": "varchar(100)",
+        "fi_due_payment_date": {
+          "name": "fi_due_payment_date",
+          "type": "varchar(225)",
           "primaryKey": false,
           "notNull": false
         },
-        "bl_reference": {
-          "name": "bl_reference",
-          "type": "varchar(100)",
+        "fi_fob": {
+          "name": "fi_fob",
+          "type": "numeric(15, 2)",
           "primaryKey": false,
           "notNull": false
         },
-        "export_pfi_number": {
-          "name": "export_pfi_number",
-          "type": "varchar(100)",
+        "fi_freight": {
+          "name": "fi_freight",
+          "type": "numeric(15, 2)",
           "primaryKey": false,
           "notNull": false
         },
-        "ba_number": {
-          "name": "ba_number",
-          "type": "varchar(100)",
+        "fi_total": {
+          "name": "fi_total",
+          "type": "numeric(15, 2)",
           "primaryKey": false,
           "notNull": false
         },
-        "form_number": {
-          "name": "form_number",
-          "type": "varchar(100)",
+        "fi_net_weight": {
+          "name": "fi_net_weight",
+          "type": "numeric(15, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fi_gross_weight": {
+          "name": "fi_gross_weight",
+          "type": "numeric(15, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "naicom_id": {
+          "name": "naicom_id",
+          "type": "varchar(225)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ii_date_of_issue": {
+          "name": "ii_date_of_issue",
+          "type": "varchar(225)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ii_premium_amount": {
+          "name": "ii_premium_amount",
+          "type": "numeric(15, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ii_declared_cert_no": {
+          "name": "ii_declared_cert_no",
+          "type": "varchar(225)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bl_number": {
+          "name": "bl_number",
+          "type": "varchar(225)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "container_number": {
+          "name": "container_number",
+          "type": "varchar(225)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "seal_number": {
+          "name": "seal_number",
+          "type": "varchar(225)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "export_eleV8Code": {
+          "name": "export_eleV8Code",
+          "type": "varchar(225)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "export_insurance_date_of_issue": {
+          "name": "export_insurance_date_of_issue",
+          "type": "varchar(225)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "export_insurance_declared_cert_no": {
+          "name": "export_insurance_declared_cert_no",
+          "type": "varchar(225)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "export_insurance_premium_amount": {
+          "name": "export_insurance_premium_amount",
+          "type": "numeric(15, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bank_application_number": {
+          "name": "bank_application_number",
+          "type": "varchar(225)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "form_m_number": {
+          "name": "form_m_number",
+          "type": "varchar(225)",
           "primaryKey": false,
           "notNull": false
         },
         "paar_number": {
           "name": "paar_number",
-          "type": "varchar(100)",
+          "type": "varchar(225)",
           "primaryKey": false,
           "notNull": false
         },
-        "export_assessment_amount": {
-          "name": "export_assessment_amount",
-          "type": "varchar(100)",
+        "paar_issued_date": {
+          "name": "paar_issued_date",
+          "type": "varchar(225)",
           "primaryKey": false,
           "notNull": false
         },
-        "export_assessment_cno": {
-          "name": "export_assessment_cno",
-          "type": "varchar(100)",
+        "assessment_number": {
+          "name": "assessment_number",
+          "type": "varchar(225)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assessment_date": {
+          "name": "assessment_date",
+          "type": "varchar(225)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "duty_amount": {
+          "name": "duty_amount",
+          "type": "numeric",
           "primaryKey": false,
           "notNull": false
         },
@@ -576,14 +647,211 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "summary_order_pfi_number_unique": {
-          "name": "summary_order_pfi_number_unique",
+        "summary_pfi_number_unique": {
+          "name": "summary_pfi_number_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "order_pfi_number"
+            "pfi_number"
           ]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.template": {
+      "name": "template",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_path": {
+          "name": "file_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.template_field": {
+      "name": "template_field",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "template_id": {
+          "name": "template_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "field_name": {
+          "name": "field_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "field_label": {
+          "name": "field_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "field_type": {
+          "name": "field_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "required": {
+          "name": "required",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "default_value": {
+          "name": "default_value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_invitations": {
+      "name": "user_invitations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "used_at": {
+          "name": "used_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_invitations_user_id_users_id_fk": {
+          "name": "user_invitations_user_id_users_id_fk",
+          "tableFrom": "user_invitations",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -614,7 +882,7 @@
           "name": "password",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "role": {
           "name": "role",
@@ -628,6 +896,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'ACTIVE'"
         }
       },
       "indexes": {},
@@ -699,7 +974,16 @@
       "isRLSEnabled": false
     }
   },
-  "enums": {},
+  "enums": {
+    "public.document_status": {
+      "name": "document_status",
+      "schema": "public",
+      "values": [
+        "active",
+        "inactive"
+      ]
+    }
+  },
   "schemas": {},
   "sequences": {},
   "roles": {},

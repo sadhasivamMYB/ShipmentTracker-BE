@@ -1,6 +1,6 @@
 export { users } from "./users/users.schema";
 export { workspaces } from "./workspace/workspace.schema";
-export { documentTypes } from "./documentType/document_type.schema";
+export { documentTypes, documentStatusEnum } from "./documentType/document_type.schema";
 export { documentUploads } from "./documentUpload/document_upload.schema";
 export { summary } from "./summary/summary.schema";
 export { documentFields } from "./documentField/document_field.schema";

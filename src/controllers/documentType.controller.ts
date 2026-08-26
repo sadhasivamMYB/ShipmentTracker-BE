@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 import { db } from '../config/database';
 import { documentTypes } from '../database/schema/documentType/document_type.schema';
-import { eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import { CreateDocumentTypeSchema, UpdateDocumentTypeSchema } from '../zod/documentType.zod';
 import { z } from 'zod';
 
 export const getDocumentTypes = async (req: Request, res: Response) => {
     try {
-        const types = await db.select().from(documentTypes);
+        const types = await db.select().from(documentTypes).orderBy(asc(documentTypes.order));
         res.json({ success: true, data: types });
     } catch (error) {
         console.error('Get document types error:', error);
@@ -16,6 +16,17 @@ export const getDocumentTypes = async (req: Request, res: Response) => {
 };
 
 export const createDocumentType = async (req: Request, res: Response) => {
+
+    const order_map = new Map<string, number>([
+        ["PFI", 1],
+        ["IINS", 2],
+        ["EXPORT_PFI", 3],
+        ["EINS", 4],
+        ["FI", 5],
+        ["PAAR", 6],
+        ["FORM_M", 7],
+        ["SGD", 8],
+    ])
     try {
         const validatedData = CreateDocumentTypeSchema.parse(req.body);
 
@@ -25,7 +36,10 @@ export const createDocumentType = async (req: Request, res: Response) => {
             return;
         }
 
-        const [newType] = await db.insert(documentTypes).values(validatedData).returning();
+        const [newType] = await db.insert(documentTypes).values({
+            ...validatedData,
+            order: order_map.get(validatedData.documentCode) as number,
+        }).returning();
         res.status(201).json({ success: true, data: newType });
     } catch (error: any) {
         console.error('Create document type error:', error);
@@ -38,6 +52,9 @@ export const createDocumentType = async (req: Request, res: Response) => {
         }
     }
 };
+
+
+
 
 export const updateDocumentType = async (req: Request, res: Response) => {
     try {

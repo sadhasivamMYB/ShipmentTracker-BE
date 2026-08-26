@@ -21,7 +21,7 @@ async function seed() {
         console.log("Cleared existing data.");
 
         // 1. Users
-        const passwordHash = await bcrypt.hash("password123", 10);
+        const passwordHash = await bcrypt.hash("password@123", 10);
         const [admin] = await db.insert(users).values({
             fullName: "Kiran",
             email: "admin@company.com",
@@ -45,14 +45,14 @@ async function seed() {
 
         // 3. Document Types
         const docTypes = [
-            { name: "PFI", code: "PFI", description: "PFI" },
-            { name: "Insurance", code: "ins", description: "Insurance Certificate" },
-            { name: "Export Insurance", code: "eins", description: "Export Insurance Certificate" },
-            { name: "export pfi", code: "export_pfi", description: "export PFI" },
-            { name: "SGD", code: "sgd", description: "SG D" },
-            { name: "Form M", code: "form_m", description: "Form M" },
-            { name: "PAAR", code: "PAAR", description: "PAAR Document" },
-            { name: "Final Invoice", code: "FI", description: "Final Invoice Document" },
+            { name: "PFI", code: "PFI", description: "PFI", order: 1 },
+            { name: "Insurance", code: "IINS", description: "Insurance Certificate", order: 2 },
+            { name: "EXPORT PFI", code: "EXPORT_PFI", description: "export PFI", order: 3 },
+            { name: "Export Insurance", code: "EINS", description: "Export Insurance Certificate", order: 4 },
+            { name: "Form M", code: "FORM_M", description: "Form M", order: 5 },
+            { name: "PAAR", code: "PAAR", description: "PAAR Document", order: 6 },
+            { name: "SGD", code: "SGD", description: "SGD", order: 7 },
+            { name: "Final Invoice", code: "FI", description: "Final Invoice Document", order: 8 },
 
         ];
 
@@ -62,12 +62,12 @@ async function seed() {
                 documentCode: docType.code,
                 status: "active",
                 description: docType.description,
+                order: docType.order,
 
             });
         }));
 
         console.log("Seeding complete! ✨");
-        console.log("Use admin@example.com / password123 to login.");
         process.exit(0);
     } catch (error) {
         console.error("Seeding failed:", error);

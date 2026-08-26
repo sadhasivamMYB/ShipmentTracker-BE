@@ -5,6 +5,6 @@ export default defineConfig({
     out: "./src/database/migrations",
     dialect: "postgresql",
     dbCredentials: {
-        url: process.env.DATABASE_URL || "postgres://postgres:sadha123@localhost:5432/shipment_tracker",
+        url: process.env.DATABASE_URL!,
     },
 });
