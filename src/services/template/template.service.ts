@@ -99,7 +99,7 @@ export class TemplateService {
 
         const fileName = `generated-${Date.now()}.docx`;
         const outputPath = path.join(
-            "uploads",
+            "templates",
             "generated",
             fileName
         );

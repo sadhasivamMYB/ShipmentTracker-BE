@@ -7,6 +7,7 @@ export const CreateDocumentTypeSchema = z.object({
     documentCode: z.enum(ALLOWED_DOCUMENT_CODES, { message: "Document code must be one of: PFI, IINS, BL, EXPORT_PFI, EINS, FI, PAAR, FORM_M, SGD" }),
     description: z.string().max(255).optional().nullable(),
     status: z.enum(["active", "inactive"]).optional().default("active"),
+    order: z.number().optional(),
 });
 
 export const UpdateDocumentTypeSchema = z.object({
@@ -14,4 +15,5 @@ export const UpdateDocumentTypeSchema = z.object({
     documentCode: z.enum(ALLOWED_DOCUMENT_CODES, { message: "Document code must be one of: PFI, IINS, BL, EXPORT_PFI, EINS, FI, PAAR, FORM_M, SGD" }),
     description: z.string().max(255).optional().nullable(),
     status: z.enum(["active", "inactive"]),
+    order: z.number().optional(),
 });

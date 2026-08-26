@@ -1,0 +1,1 @@
+ALTER TABLE "document_types" ADD COLUMN "order" integer NOT NULL;
